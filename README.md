@@ -51,7 +51,7 @@ jobops/
 
 ## Status
 
-Projeto em fase de arquitetura e implementacao inicial da API.
+Projeto em fase de MVP inicial com API e interface web.
 
 ## Primeiros comandos
 
@@ -67,3 +67,20 @@ API local:
 ```text
 http://localhost:3333/api/health
 ```
+
+Interface web:
+
+```bash
+npm run web:dev
+```
+
+```text
+http://127.0.0.1:5173
+```
+
+## MVP atual
+
+- API Express com TypeScript.
+- Prisma schema para candidaturas, empresas, curriculos, interacoes e lembretes.
+- Dashboard web com metricas, filtros, cadastro de vaga e tabela de acompanhamento.
+- Docker Compose para PostgreSQL local.

@@ -30,6 +30,16 @@ Graficos:
 - Vagas por plataforma
 - Retornos por curriculo
 
+## MVP implementado
+
+Primeira versao do `apps/web`:
+
+- cards de metricas principais;
+- formulario para cadastrar candidatura;
+- filtros por texto, status e area;
+- tabela de acompanhamento com empresa, vaga, status, fit, data, proxima acao e link;
+- integracao direta com a API em `/api/applications` e `/api/metrics/summary`.
+
 ## Tela de vagas
 
 Modos de visualizacao:
@@ -81,4 +91,3 @@ observacoes
 6. Se receber retorno, atualiza status.
 7. Se nao receber, cria follow-up.
 8. Dashboard atualiza metricas.
-
