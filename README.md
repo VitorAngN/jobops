@@ -51,5 +51,19 @@ jobops/
 
 ## Status
 
-Projeto em fase de arquitetura e planejamento.
+Projeto em fase de arquitetura e implementacao inicial da API.
 
+## Primeiros comandos
+
+```bash
+npm install
+docker compose -f infra/docker-compose.yml up -d
+npm run api:prisma:generate
+npm run api:dev
+```
+
+API local:
+
+```text
+http://localhost:3333/api/health
+```

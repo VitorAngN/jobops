@@ -10,18 +10,17 @@ web
 postgres
 ```
 
-## Docker Compose futuro
+## Docker Compose local
 
 ```text
-api:
-  Node.js + TypeScript
-
-web:
-  React build servido por Nginx ou Vite dev em local
-
 postgres:
-  banco relacional persistente
+  PostgreSQL 16
+  porta 5432
+  usuario jobops
+  banco jobops
 ```
+
+Arquivo atual: `infra/docker-compose.yml`.
 
 ## CI com GitHub Actions
 
@@ -52,4 +51,3 @@ Primeira versao de deploy:
 - metricas basicas de uptime;
 - backup do banco;
 - runbook de deploy e rollback.
-

@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ApplicationArea {
+  BACKEND
+  DEVOPS
+  CLOUD
+  FULLSTACK
+  FRONTEND
+  DATA
+  SECURITY
+  OTHER
+}
+
+enum ApplicationLevel {
+  INTERNSHIP
+  TRAINEE
+  JUNIOR
+  MID
+  SENIOR
+  UNKNOWN
+}
+
+enum WorkMode {
+  REMOTE
+  HYBRID
+  ONSITE
+  UNKNOWN
+}
+
+enum ContractType {
+  INTERNSHIP
+  CLT
+  PJ
+  TEMPORARY
+  OTHER
+  UNKNOWN
+}
+
+enum SourcePlatform {
+  LINKEDIN
+  GUPY
+  COMPANY_SITE
+  INDEED
+  GLASSDOOR
+  GREENHOUSE
+  LEVER
+  ASHBY
+  REFERRAL
+  OTHER
+}
+
+enum ApplicationStatus {
+  SAVED
+  APPLIED
+  RECRUITER_CONTACTED
+  IN_REVIEW
+  TEST_SENT
+  HR_INTERVIEW
+  TECH_INTERVIEW
+  WAITING_RESPONSE
+  REJECTED
+  GHOSTED
+  OFFER
+  ARCHIVED
+}
+
+enum ResumeLanguage {
+  PT_BR
+  EN
+  ES
+}
+
+enum ResumeFocus {
+  BACKEND
+  DEVOPS
+  CLOUD
+  FULLSTACK
+  GENERAL
+}
+
+enum InteractionType {
+  MESSAGE
+  EMAIL
+  INTERVIEW
+  TEST
+  FEEDBACK
+  NOTE
+}
+
+model User {
+  id             String           @id @default(cuid())
+  name           String
+  email          String           @unique
+  passwordHash   String?
+  applications   JobApplication[]
+  resumeVersions ResumeVersion[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model Company {
+  id           String           @id @default(cuid())
+  name         String           @unique
+  website      String?
+  sector       String?
+  location     String?
+  notes        String?
+  applications JobApplication[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model ResumeVersion {
+  id           String           @id @default(cuid())
+  userId       String?
+  user         User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name         String
+  language     ResumeLanguage   @default(PT_BR)
+  focus        ResumeFocus      @default(GENERAL)
+  fileUrl      String?
+  notes        String?
+  applications JobApplication[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model JobApplication {
+  id              String            @id @default(cuid())
+  userId          String?
+  user            User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  companyId       String
+  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  resumeVersionId String?
+  resumeVersion   ResumeVersion?    @relation(fields: [resumeVersionId], references: [id], onDelete: SetNull)
+  title           String
+  area            ApplicationArea   @default(BACKEND)
+  level           ApplicationLevel  @default(INTERNSHIP)
+  workMode        WorkMode          @default(REMOTE)
+  location        String?
+  contractType    ContractType      @default(UNKNOWN)
+  sourcePlatform  SourcePlatform    @default(LINKEDIN)
+  jobUrl          String?
+  description     String?
+  status          ApplicationStatus @default(SAVED)
+  fitScore        Int?
+  foundAt         DateTime?
+  appliedAt       DateTime?
+  lastResponseAt  DateTime?
+  nextAction      String?
+  followUpAt      DateTime?
+  notes           String?
+  interactions    Interaction[]
+  reminders       Reminder[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([status])
+  @@index([area])
+  @@index([sourcePlatform])
+  @@index([appliedAt])
+}
+
+model Interaction {
+  id            String          @id @default(cuid())
+  applicationId String
+  application   JobApplication  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  type          InteractionType @default(NOTE)
+  contactName   String?
+  contactRole   String?
+  contactUrl    String?
+  happenedAt    DateTime        @default(now())
+  description   String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Reminder {
+  id            String         @id @default(cuid())
+  applicationId String
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  title         String
+  dueAt         DateTime
+  done          Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+

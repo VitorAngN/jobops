@@ -1,0 +1,17 @@
+{
+  "name": "jobops",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "api:dev": "npm run dev -w apps/api",
+    "api:build": "npm run build -w apps/api",
+    "api:typecheck": "npm run typecheck -w apps/api",
+    "api:prisma:generate": "npm run prisma:generate -w apps/api",
+    "api:prisma:migrate": "npm run prisma:migrate -w apps/api"
+  }
+}
+
