@@ -61,6 +61,7 @@ docker compose -f infra/docker-compose.yml up -d
 npm run api:prisma:generate
 npm run api:prisma:migrate
 npm run api:prisma:seed
+npm run api:test
 npm run api:dev
 ```
 
@@ -88,3 +89,6 @@ http://127.0.0.1:5173
 - Docker Compose para PostgreSQL local.
 - Arquitetura backend em camadas com routes, services, repositories e Prisma ORM.
 - GitHub Actions com typecheck e build de API/Web.
+- Listagem paginada, ordenavel e filtravel de candidaturas.
+- Atualizacao rapida de status e geracao de lembretes de follow-up.
+- Testes unitarios para regras de lifecycle e paginacao.

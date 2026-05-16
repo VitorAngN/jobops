@@ -56,10 +56,58 @@ GET    /api/metrics/by-platform
 GET    /api/metrics/by-resume
 ```
 
+## Query params de candidaturas
+
+`GET /api/applications` aceita:
+
+```text
+search
+status
+area
+level
+workMode
+sourcePlatform
+resumeVersionId
+appliedFrom
+appliedTo
+page
+pageSize
+sortBy=updatedAt|appliedAt|fitScore|companyName|title
+sortOrder=asc|desc
+```
+
+Resposta:
+
+```json
+{
+  "data": [],
+  "meta": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 0,
+    "totalPages": 1,
+    "hasNextPage": false,
+    "hasPreviousPage": false
+  }
+}
+```
+
+## Regras automaticas
+
+- Ao marcar candidatura como `APPLIED`, a API preenche `appliedAt` quando a data nao foi informada.
+- Ao marcar status com retorno, como `HR_INTERVIEW`, `TECH_INTERVIEW`, `REJECTED` ou `OFFER`, a API preenche `lastResponseAt`.
+- Ao informar `followUpAt`, a API cria um lembrete pendente ligado a candidatura.
+
 ## Seed local
 
 Com Postgres rodando:
 
 ```bash
 npm run api:prisma:seed
+```
+
+## Testes
+
+```bash
+npm run api:test
 ```

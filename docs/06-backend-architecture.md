@@ -45,7 +45,6 @@ routes -> services -> repositories -> Prisma ORM -> PostgreSQL
 ## Proximas evolucoes tecnicas
 
 - Testes de integracao por rota.
-- Paginacao e ordenacao nas listagens grandes.
 - Auth com usuario real.
 - Observabilidade com logs estruturados.
 - CI com typecheck, build e testes.

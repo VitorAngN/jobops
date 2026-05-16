@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma.js";
+import { buildPaginationMeta, normalizePagination } from "../../shared/pagination.js";
 import type {
   ApplicationCreateInput,
   ApplicationListFilters,
@@ -56,15 +57,46 @@ function toWhere(filters: ApplicationListFilters): Prisma.JobApplicationWhereInp
   };
 }
 
+function toOrderBy(filters: ApplicationListFilters): Prisma.JobApplicationOrderByWithRelationInput {
+  switch (filters.sortBy) {
+    case "companyName":
+      return {
+        company: {
+          name: filters.sortOrder,
+        },
+      };
+    case "appliedAt":
+      return { appliedAt: filters.sortOrder };
+    case "fitScore":
+      return { fitScore: filters.sortOrder };
+    case "title":
+      return { title: filters.sortOrder };
+    case "updatedAt":
+    default:
+      return { updatedAt: filters.sortOrder };
+  }
+}
+
 export const applicationsRepository = {
-  list(filters: ApplicationListFilters) {
-    return prisma.jobApplication.findMany({
-      where: toWhere(filters),
-      include: applicationListInclude,
-      orderBy: {
-        updatedAt: "desc",
-      },
-    });
+  async list(filters: ApplicationListFilters) {
+    const { page, pageSize, skip, take } = normalizePagination(filters);
+    const where = toWhere(filters);
+
+    const [total, data] = await prisma.$transaction([
+      prisma.jobApplication.count({ where }),
+      prisma.jobApplication.findMany({
+        where,
+        include: applicationListInclude,
+        orderBy: toOrderBy(filters),
+        skip,
+        take,
+      }),
+    ]);
+
+    return {
+      data,
+      meta: buildPaginationMeta(total, page, pageSize),
+    };
   },
 
   findById(id: string) {
@@ -84,13 +116,25 @@ export const applicationsRepository = {
         create: { name: companyName },
       });
 
-      return tx.jobApplication.create({
+      const application = await tx.jobApplication.create({
         data: {
           ...applicationData,
           companyId: company.id,
         },
         include: applicationListInclude,
       });
+
+      if (applicationData.followUpAt) {
+        await tx.reminder.create({
+          data: {
+            applicationId: application.id,
+            title: applicationData.nextAction ?? "Follow-up da candidatura",
+            dueAt: applicationData.followUpAt,
+          },
+        });
+      }
+
+      return application;
     });
   },
 
@@ -106,7 +150,7 @@ export const applicationsRepository = {
           })
         : null;
 
-      return tx.jobApplication.update({
+      const application = await tx.jobApplication.update({
         where: { id },
         data: {
           ...applicationData,
@@ -114,6 +158,28 @@ export const applicationsRepository = {
         },
         include: applicationListInclude,
       });
+
+      if (applicationData.followUpAt) {
+        const existingReminder = await tx.reminder.findFirst({
+          where: {
+            applicationId: application.id,
+            dueAt: applicationData.followUpAt,
+            done: false,
+          },
+        });
+
+        if (!existingReminder) {
+          await tx.reminder.create({
+            data: {
+              applicationId: application.id,
+              title: applicationData.nextAction ?? "Follow-up da candidatura",
+              dueAt: applicationData.followUpAt,
+            },
+          });
+        }
+      }
+
+      return application;
     });
   },
 

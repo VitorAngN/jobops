@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { BarChart3, BriefcaseBusiness, CalendarClock, ExternalLink, Plus, RefreshCcw, Search } from "lucide-react";
 
-import { createApplication, getMetricsSummary, listApplications } from "./api";
+import { createApplication, getMetricsSummary, listApplications, listReminders, updateApplication } from "./api";
 import type {
   ApplicationArea,
   ApplicationFilters,
@@ -11,6 +11,8 @@ import type {
   CreateApplicationPayload,
   JobApplication,
   MetricsSummary,
+  PaginationMeta,
+  Reminder,
   SourcePlatform,
   WorkMode,
 } from "./types";
@@ -114,6 +116,15 @@ const emptyMetrics: MetricsSummary = {
   interviewRate: 0,
 };
 
+const emptyPagination: PaginationMeta = {
+  page: 1,
+  pageSize: 20,
+  total: 0,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPreviousPage: false,
+};
+
 function formatDate(value?: string | null): string {
   if (!value) return "-";
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" }).format(
@@ -136,11 +147,22 @@ function metricItems(metrics: MetricsSummary) {
 
 export function App() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [metrics, setMetrics] = useState<MetricsSummary>(emptyMetrics);
-  const [filters, setFilters] = useState<ApplicationFilters>({ search: "", status: "", area: "" });
+  const [pagination, setPagination] = useState<PaginationMeta>(emptyPagination);
+  const [filters, setFilters] = useState<ApplicationFilters>({
+    search: "",
+    status: "",
+    area: "",
+    page: 1,
+    pageSize: 20,
+    sortBy: "updatedAt",
+    sortOrder: "desc",
+  });
   const [form, setForm] = useState<CreateApplicationPayload>(initialForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function loadData(nextFilters = filters) {
@@ -148,9 +170,15 @@ export function App() {
     setError(null);
 
     try {
-      const [summary, items] = await Promise.all([getMetricsSummary(), listApplications(nextFilters)]);
+      const [summary, page, pendingReminders] = await Promise.all([
+        getMetricsSummary(),
+        listApplications(nextFilters),
+        listReminders(),
+      ]);
       setMetrics(summary);
-      setApplications(items);
+      setApplications(page.data);
+      setPagination(page.meta);
+      setReminders(pendingReminders);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Nao foi possivel carregar os dados.");
     } finally {
@@ -164,9 +192,9 @@ export function App() {
   }, []);
 
   const filteredCountLabel = useMemo(() => {
-    const total = applications.length;
+    const total = pagination.total;
     return total === 1 ? "1 vaga" : `${total} vagas`;
-  }, [applications.length]);
+  }, [pagination.total]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -188,8 +216,31 @@ export function App() {
   }
 
   function handleFilterChange(nextFilters: ApplicationFilters) {
-    setFilters(nextFilters);
-    void loadData(nextFilters);
+    const normalizedFilters = {
+      ...nextFilters,
+      page: nextFilters.page ?? 1,
+    };
+
+    setFilters(normalizedFilters);
+    void loadData(normalizedFilters);
+  }
+
+  function handlePageChange(page: number) {
+    handleFilterChange({ ...filters, page });
+  }
+
+  async function handleStatusChange(application: JobApplication, status: ApplicationStatus) {
+    setUpdatingId(application.id);
+    setError(null);
+
+    try {
+      await updateApplication(application.id, { status });
+      await loadData();
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Nao foi possivel atualizar o status.");
+    } finally {
+      setUpdatingId(null);
+    }
   }
 
   return (
@@ -216,6 +267,32 @@ export function App() {
             <small>{item.detail}</small>
           </article>
         ))}
+      </section>
+
+      <section className="panel reminders-panel" aria-label="Follow-ups pendentes">
+        <div className="panel-heading compact-heading">
+          <div>
+            <p className="eyebrow">Follow-ups</p>
+            <h2>Lembretes ativos</h2>
+          </div>
+          <CalendarClock size={20} aria-hidden="true" />
+        </div>
+
+        <div className="reminder-list">
+          {reminders.slice(0, 4).map((reminder) => (
+            <article className="reminder-item" key={reminder.id}>
+              <div>
+                <strong>{reminder.title}</strong>
+                <span>
+                  {reminder.application.company.name} - {reminder.application.title}
+                </span>
+              </div>
+              <time>{formatDate(reminder.dueAt)}</time>
+            </article>
+          ))}
+
+          {!loading && reminders.length === 0 ? <p className="empty-inline">Nenhum follow-up pendente.</p> : null}
+        </div>
       </section>
 
       <section className="workspace-grid">
@@ -434,7 +511,7 @@ export function App() {
               <Search size={16} aria-hidden="true" />
               <input
                 value={filters.search ?? ""}
-                onChange={(event) => handleFilterChange({ ...filters, search: event.target.value })}
+                onChange={(event) => handleFilterChange({ ...filters, search: event.target.value, page: 1 })}
                 placeholder="Buscar empresa ou cargo"
               />
             </label>
@@ -442,7 +519,7 @@ export function App() {
             <select
               value={filters.status ?? ""}
               onChange={(event) =>
-                handleFilterChange({ ...filters, status: event.target.value as ApplicationStatus | "" })
+                handleFilterChange({ ...filters, status: event.target.value as ApplicationStatus | "", page: 1 })
               }
             >
               <option value="">Todos os status</option>
@@ -455,7 +532,9 @@ export function App() {
 
             <select
               value={filters.area ?? ""}
-              onChange={(event) => handleFilterChange({ ...filters, area: event.target.value as ApplicationArea | "" })}
+              onChange={(event) =>
+                handleFilterChange({ ...filters, area: event.target.value as ApplicationArea | "", page: 1 })
+              }
             >
               <option value="">Todas as areas</option>
               {areaOptions.map((area) => (
@@ -463,6 +542,23 @@ export function App() {
                   {areaLabels[area]}
                 </option>
               ))}
+            </select>
+
+            <select
+              value={filters.sortBy ?? "updatedAt"}
+              onChange={(event) =>
+                handleFilterChange({
+                  ...filters,
+                  sortBy: event.target.value as ApplicationFilters["sortBy"],
+                  page: 1,
+                })
+              }
+            >
+              <option value="updatedAt">Mais recentes</option>
+              <option value="appliedAt">Data de aplicacao</option>
+              <option value="fitScore">Fit</option>
+              <option value="companyName">Empresa</option>
+              <option value="title">Cargo</option>
             </select>
           </div>
 
@@ -497,7 +593,20 @@ export function App() {
                       <small>{levelLabels[application.level]}</small>
                     </td>
                     <td>
-                      <span className={statusClass(application.status)}>{statusLabels[application.status]}</span>
+                      <select
+                        className={statusClass(application.status)}
+                        value={application.status}
+                        disabled={updatingId === application.id}
+                        onChange={(event) =>
+                          void handleStatusChange(application, event.target.value as ApplicationStatus)
+                        }
+                      >
+                        {statusOptions.map((status) => (
+                          <option key={status} value={status}>
+                            {statusLabels[status]}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td>{areaLabels[application.area]}</td>
                     <td>
@@ -531,6 +640,28 @@ export function App() {
                 ) : null}
               </tbody>
             </table>
+          </div>
+
+          <div className="pagination">
+            <button
+              className="button button-secondary"
+              type="button"
+              disabled={!pagination.hasPreviousPage || loading}
+              onClick={() => handlePageChange(pagination.page - 1)}
+            >
+              Anterior
+            </button>
+            <span>
+              Pagina {pagination.page} de {pagination.totalPages}
+            </span>
+            <button
+              className="button button-secondary"
+              type="button"
+              disabled={!pagination.hasNextPage || loading}
+              onClick={() => handlePageChange(pagination.page + 1)}
+            >
+              Proxima
+            </button>
           </div>
         </section>
       </section>

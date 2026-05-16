@@ -80,6 +80,20 @@ export type JobApplication = {
   };
 };
 
+export type PaginationMeta = {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  meta: PaginationMeta;
+};
+
 export type MetricsSummary = {
   total: number;
   appliedLast7Days: number;
@@ -94,6 +108,10 @@ export type ApplicationFilters = {
   search?: string;
   status?: ApplicationStatus | "";
   area?: ApplicationArea | "";
+  page?: number;
+  pageSize?: number;
+  sortBy?: "updatedAt" | "appliedAt" | "fitScore" | "companyName" | "title";
+  sortOrder?: "asc" | "desc";
 };
 
 export type CreateApplicationPayload = {
@@ -112,4 +130,14 @@ export type CreateApplicationPayload = {
   nextAction?: string;
   followUpAt?: string;
   notes?: string;
+};
+
+export type UpdateApplicationPayload = Partial<CreateApplicationPayload>;
+
+export type Reminder = {
+  id: string;
+  title: string;
+  dueAt: string;
+  done: boolean;
+  application: JobApplication;
 };

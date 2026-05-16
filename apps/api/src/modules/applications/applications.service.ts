@@ -1,4 +1,5 @@
 import { NotFoundError } from "../../shared/http-errors.js";
+import { withLifecycleDefaults } from "./application-lifecycle.js";
 import { applicationsRepository } from "./applications.repository.js";
 import type {
   ApplicationCreateInput,
@@ -25,11 +26,11 @@ export const applicationsService = {
   },
 
   createApplication(input: ApplicationCreateInput) {
-    return applicationsRepository.create(input);
+    return applicationsRepository.create(withLifecycleDefaults(input));
   },
 
   updateApplication(id: string, input: ApplicationUpdateInput) {
-    return applicationsRepository.update(id, input);
+    return applicationsRepository.update(id, withLifecycleDefaults(input));
   },
 
   deleteApplication(id: string) {

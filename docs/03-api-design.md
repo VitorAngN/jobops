@@ -39,6 +39,10 @@ resumeVersionId
 appliedFrom
 appliedTo
 search
+page
+pageSize
+sortBy
+sortOrder
 ```
 
 ### Companies

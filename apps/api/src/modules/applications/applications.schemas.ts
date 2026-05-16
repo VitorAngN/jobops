@@ -65,6 +65,10 @@ export const listApplicationsQuerySchema = z.object({
   search: z.string().optional(),
   appliedFrom: z.coerce.date().optional(),
   appliedTo: z.coerce.date().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  pageSize: z.coerce.number().int().positive().max(100).default(20),
+  sortBy: z.enum(["updatedAt", "appliedAt", "fitScore", "companyName", "title"]).default("updatedAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
 export const interactionBodySchema = z.object({

@@ -1,4 +1,12 @@
-import type { ApplicationFilters, CreateApplicationPayload, JobApplication, MetricsSummary } from "./types";
+import type {
+  ApplicationFilters,
+  CreateApplicationPayload,
+  JobApplication,
+  MetricsSummary,
+  PaginatedResponse,
+  Reminder,
+  UpdateApplicationPayload,
+} from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3333/api";
 
@@ -29,19 +37,23 @@ function toQueryString(filters: ApplicationFilters): string {
   if (filters.search) params.set("search", filters.search);
   if (filters.status) params.set("status", filters.status);
   if (filters.area) params.set("area", filters.area);
+  if (filters.page) params.set("page", String(filters.page));
+  if (filters.pageSize) params.set("pageSize", String(filters.pageSize));
+  if (filters.sortBy) params.set("sortBy", filters.sortBy);
+  if (filters.sortOrder) params.set("sortOrder", filters.sortOrder);
 
   const query = params.toString();
   return query ? `?${query}` : "";
 }
 
-function compactPayload(payload: CreateApplicationPayload): Record<string, unknown> {
+function compactPayload<T extends object>(payload: T): Record<string, unknown> {
   return Object.fromEntries(
     Object.entries(payload).filter(([, value]) => value !== "" && value !== undefined && value !== null),
   );
 }
 
-export function listApplications(filters: ApplicationFilters): Promise<JobApplication[]> {
-  return request<JobApplication[]>(`/applications${toQueryString(filters)}`);
+export function listApplications(filters: ApplicationFilters): Promise<PaginatedResponse<JobApplication>> {
+  return request<PaginatedResponse<JobApplication>>(`/applications${toQueryString(filters)}`);
 }
 
 export function createApplication(payload: CreateApplicationPayload): Promise<JobApplication> {
@@ -51,6 +63,17 @@ export function createApplication(payload: CreateApplicationPayload): Promise<Jo
   });
 }
 
+export function updateApplication(id: string, payload: UpdateApplicationPayload): Promise<JobApplication> {
+  return request<JobApplication>(`/applications/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(compactPayload(payload)),
+  });
+}
+
 export function getMetricsSummary(): Promise<MetricsSummary> {
   return request<MetricsSummary>("/metrics/summary");
+}
+
+export function listReminders(): Promise<Reminder[]> {
+  return request<Reminder[]>("/reminders?done=false");
 }

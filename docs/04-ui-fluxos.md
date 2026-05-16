@@ -37,7 +37,9 @@ Primeira versao do `apps/web`:
 - cards de metricas principais;
 - formulario para cadastrar candidatura;
 - filtros por texto, status e area;
-- tabela de acompanhamento com empresa, vaga, status, fit, data, proxima acao e link;
+- ordenacao por data, fit, empresa e cargo;
+- tabela paginada com empresa, vaga, status editavel, fit, data, proxima acao e link;
+- painel de follow-ups ativos;
 - integracao direta com a API em `/api/applications` e `/api/metrics/summary`.
 
 ## Tela de vagas

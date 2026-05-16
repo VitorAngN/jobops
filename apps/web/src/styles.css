@@ -130,6 +130,53 @@ h2 {
   margin-bottom: 16px;
 }
 
+.reminders-panel {
+  margin-bottom: 16px;
+}
+
+.compact-heading {
+  margin-bottom: 12px;
+}
+
+.reminder-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reminder-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 76px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.reminder-item strong,
+.reminder-item span {
+  display: block;
+}
+
+.reminder-item strong {
+  color: #111827;
+  font-size: 0.86rem;
+}
+
+.reminder-item span,
+.reminder-item time,
+.empty-inline {
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+.reminder-item time {
+  flex: 0 0 auto;
+  font-weight: 800;
+}
+
 .metric-card,
 .panel {
   border: 1px solid #d9e0e8;
@@ -305,6 +352,7 @@ td strong {
   align-items: center;
   min-height: 26px;
   border-radius: 999px;
+  border: 0;
   padding: 0 10px;
   font-size: 0.72rem;
   font-weight: 850;
@@ -370,8 +418,23 @@ td strong {
   text-align: center;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+  color: #4b5563;
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
 @media (max-width: 1180px) {
   .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reminder-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -399,7 +462,13 @@ td strong {
   }
 
   .metrics-grid,
+  .reminder-list,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pagination {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
