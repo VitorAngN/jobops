@@ -63,6 +63,17 @@ Painel de detalhes da candidatura com historico de interacoes e lembretes de fol
 
 ![Detalhes da candidatura](docs/assets/jobops-detail.png)
 
+## Documentacao tecnica
+
+- [Visao geral](docs/00-visao-geral.md)
+- [Modelagem de dados](docs/01-modelagem-dados.md)
+- [Roadmap](docs/02-roadmap.md)
+- [API design](docs/03-api-design.md)
+- [Fluxos de UI](docs/04-ui-fluxos.md)
+- [DevOps](docs/05-devops.md)
+- [Arquitetura backend](docs/06-backend-architecture.md)
+- [Evidencias tecnicas](docs/07-evidencias-tecnicas.md)
+
 ## Primeiros comandos
 
 ```bash
