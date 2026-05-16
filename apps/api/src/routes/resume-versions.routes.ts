@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 
 import { prisma } from "../lib/prisma.js";
+import { NotFoundError } from "../shared/http-errors.js";
 
 export const resumeVersionsRoutes = Router();
 
@@ -44,6 +45,28 @@ resumeVersionsRoutes.post("/", async (request, response, next) => {
   }
 });
 
+resumeVersionsRoutes.get("/:id", async (request, response, next) => {
+  try {
+    const resumeVersion = await prisma.resumeVersion.findUnique({
+      where: { id: request.params.id },
+      include: {
+        applications: {
+          include: { company: true },
+          orderBy: { updatedAt: "desc" },
+        },
+      },
+    });
+
+    if (!resumeVersion) {
+      throw new NotFoundError("ResumeVersion");
+    }
+
+    return response.json(resumeVersion);
+  } catch (error) {
+    return next(error);
+  }
+});
+
 resumeVersionsRoutes.patch("/:id", async (request, response, next) => {
   try {
     const body = resumeVersionBodySchema.partial().parse(request.body);
@@ -70,4 +93,3 @@ resumeVersionsRoutes.delete("/:id", async (request, response, next) => {
     return next(error);
   }
 });
-

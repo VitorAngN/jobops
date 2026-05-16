@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 
 import { prisma } from "../lib/prisma.js";
+import { NotFoundError } from "../shared/http-errors.js";
 
 export const companiesRoutes = Router();
 
@@ -44,6 +45,27 @@ companiesRoutes.post("/", async (request, response, next) => {
   }
 });
 
+companiesRoutes.get("/:id", async (request, response, next) => {
+  try {
+    const company = await prisma.company.findUnique({
+      where: { id: request.params.id },
+      include: {
+        applications: {
+          orderBy: { updatedAt: "desc" },
+        },
+      },
+    });
+
+    if (!company) {
+      throw new NotFoundError("Company");
+    }
+
+    return response.json(company);
+  } catch (error) {
+    return next(error);
+  }
+});
+
 companiesRoutes.patch("/:id", async (request, response, next) => {
   try {
     const body = companyBodySchema.partial().parse(request.body);
@@ -70,4 +92,3 @@ companiesRoutes.delete("/:id", async (request, response, next) => {
     return next(error);
   }
 });
-

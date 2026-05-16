@@ -30,12 +30,24 @@ POST   /api/applications
 GET    /api/applications/:id
 PATCH  /api/applications/:id
 DELETE /api/applications/:id
+GET    /api/applications/:id/interactions
+POST   /api/applications/:id/interactions
+POST   /api/applications/:id/reminders
+
+PATCH  /api/interactions/:id
+DELETE /api/interactions/:id
+
+GET    /api/reminders
+PATCH  /api/reminders/:id
+DELETE /api/reminders/:id
 
 GET    /api/companies
 POST   /api/companies
+GET    /api/companies/:id
 
 GET    /api/resume-versions
 POST   /api/resume-versions
+GET    /api/resume-versions/:id
 
 GET    /api/metrics/summary
 GET    /api/metrics/by-status
@@ -44,3 +56,10 @@ GET    /api/metrics/by-platform
 GET    /api/metrics/by-resume
 ```
 
+## Seed local
+
+Com Postgres rodando:
+
+```bash
+npm run api:prisma:seed
+```

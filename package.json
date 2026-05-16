@@ -12,6 +12,7 @@
     "api:typecheck": "npm run typecheck -w apps/api",
     "api:prisma:generate": "npm run prisma:generate -w apps/api",
     "api:prisma:migrate": "npm run prisma:migrate -w apps/api",
+    "api:prisma:seed": "npm run prisma:seed -w apps/api",
     "web:dev": "npm run dev -w apps/web",
     "web:build": "npm run build -w apps/web",
     "web:typecheck": "npm run typecheck -w apps/web",

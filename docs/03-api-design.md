@@ -78,6 +78,13 @@ PATCH /reminders/:id
 DELETE /reminders/:id
 ```
 
+Filtros previstos no `GET /reminders`:
+
+```text
+done
+due=overdue|today|upcoming
+```
+
 ### Metrics
 
 ```http
@@ -95,4 +102,5 @@ GET /metrics/by-resume
 - Uma candidatura pode ter varias interacoes.
 - Uma candidatura pode ter varios lembretes.
 - Status deve ser controlado por enum para manter metricas consistentes.
-
+- Operacoes que unem empresa e candidatura devem ser transacionais.
+- Rotas HTTP devem chamar services, e services devem usar repositories baseados em Prisma.
