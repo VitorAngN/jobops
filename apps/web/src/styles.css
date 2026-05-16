@@ -123,11 +123,61 @@ h2 {
   font-weight: 650;
 }
 
+.notice {
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: #ecfdf5;
+  color: #0f766e;
+  font-weight: 650;
+}
+
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 16px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-panel {
+  min-height: 190px;
+}
+
+.bar-list {
+  display: grid;
+  gap: 10px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: 10px;
+  color: #374151;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.bar-row div {
+  height: 10px;
+  border-radius: 999px;
+  background: #eef2f7;
+  overflow: hidden;
+}
+
+.bar-row i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0f766e;
 }
 
 .reminders-panel {
@@ -231,6 +281,22 @@ td small {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+}
+
+.panel-actions,
+.inline-actions,
+.row-actions,
+.drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-actions .button,
+.inline-actions .button,
+.drawer-actions .button {
+  width: auto;
+  margin-top: 0;
 }
 
 .panel-heading svg {
@@ -446,7 +512,7 @@ td strong {
 }
 
 .detail-panel {
-  width: min(560px, 100%);
+  width: min(720px, 100%);
   height: 100%;
   overflow-y: auto;
   border-left: 1px solid #d9e0e8;
@@ -569,6 +635,16 @@ td strong {
   gap: 10px;
 }
 
+.edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.edit-form textarea {
+  min-height: 90px;
+}
+
 .inline-form textarea,
 .inline-form button,
 .two-columns button {
@@ -596,8 +672,74 @@ td strong {
   font-weight: 750;
 }
 
+.management-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.management-panel {
+  min-height: 360px;
+}
+
+.compact-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.compact-form textarea,
+.compact-form .inline-actions {
+  grid-column: 1 / -1;
+}
+
+.compact-form textarea {
+  min-height: 74px;
+}
+
+.resource-list {
+  display: grid;
+  gap: 10px;
+}
+
+.resource-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+}
+
+.resource-row strong,
+.resource-row span {
+  display: block;
+}
+
+.resource-row span {
+  margin-top: 3px;
+  color: #6b7280;
+  font-size: 0.76rem;
+}
+
+.danger-button {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #991b1b;
+}
+
+.danger-icon {
+  color: #b91c1c;
+}
+
 @media (max-width: 1180px) {
-  .metrics-grid {
+  .metrics-grid,
+  .charts-grid,
+  .management-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -629,7 +771,10 @@ td strong {
   }
 
   .metrics-grid,
+  .charts-grid,
   .reminder-list,
+  .management-grid,
+  .compact-form,
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -644,6 +789,7 @@ td strong {
   }
 
   .detail-grid,
+  .edit-form,
   .inline-form,
   .two-columns {
     grid-template-columns: 1fr;

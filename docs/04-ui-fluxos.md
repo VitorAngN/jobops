@@ -35,14 +35,20 @@ Graficos:
 Primeira versao do `apps/web`:
 
 - cards de metricas principais;
+- graficos simples por status e area;
 - formulario para cadastrar candidatura;
 - filtros por texto, status e area;
 - ordenacao por data, fit, empresa e cargo;
 - tabela paginada com empresa, vaga, status editavel, fit, data, proxima acao e link;
+- exportacao da lista filtrada em CSV ou Excel;
 - painel de follow-ups ativos;
 - painel lateral de detalhes com historico de interacoes;
+- edicao completa e exclusao de candidatura pelo painel lateral;
 - criacao manual de interacoes e follow-ups;
 - conclusao de lembretes pela interface;
+- CRUD visual de empresas;
+- CRUD visual de versoes de curriculo;
+- feedback visual para erros, carregamento e operacoes concluidas;
 - integracao direta com a API em `/api/applications` e `/api/metrics/summary`.
 
 ## Tela de vagas
@@ -96,3 +102,4 @@ observacoes
 6. Se receber retorno, atualiza status.
 7. Se nao receber, cria follow-up.
 8. Dashboard atualiza metricas.
+9. Usuario exporta a lista para CSV/Excel quando quiser revisar ou guardar backup.

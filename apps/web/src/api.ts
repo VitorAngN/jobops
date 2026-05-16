@@ -1,6 +1,9 @@
 import type {
   ApplicationFilters,
   ApplicationDetail,
+  AreaMetric,
+  Company,
+  CompanyPayload,
   CreateInteractionPayload,
   CreateApplicationPayload,
   CreateReminderPayload,
@@ -8,6 +11,9 @@ import type {
   MetricsSummary,
   PaginatedResponse,
   Reminder,
+  ResumeVersion,
+  ResumeVersionPayload,
+  StatusMetric,
   UpdateApplicationPayload,
 } from "./types";
 
@@ -90,6 +96,12 @@ export function updateApplication(id: string, payload: UpdateApplicationPayload)
   });
 }
 
+export function deleteApplication(id: string): Promise<void> {
+  return request<void>(`/applications/${id}`, {
+    method: "DELETE",
+  });
+}
+
 export function getApplication(id: string): Promise<ApplicationDetail> {
   return request<ApplicationDetail>(`/applications/${id}`);
 }
@@ -119,6 +131,62 @@ export function getMetricsSummary(): Promise<MetricsSummary> {
   return request<MetricsSummary>("/metrics/summary");
 }
 
+export function getMetricsByStatus(): Promise<StatusMetric[]> {
+  return request<StatusMetric[]>("/metrics/by-status");
+}
+
+export function getMetricsByArea(): Promise<AreaMetric[]> {
+  return request<AreaMetric[]>("/metrics/by-area");
+}
+
 export function listReminders(): Promise<Reminder[]> {
   return request<Reminder[]>("/reminders?done=false");
+}
+
+export function listCompanies(): Promise<Company[]> {
+  return request<Company[]>("/companies");
+}
+
+export function createCompany(payload: CompanyPayload): Promise<Company> {
+  return request<Company>("/companies", {
+    method: "POST",
+    body: JSON.stringify(compactPayload(payload)),
+  });
+}
+
+export function updateCompany(id: string, payload: Partial<CompanyPayload>): Promise<Company> {
+  return request<Company>(`/companies/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(compactPayload(payload)),
+  });
+}
+
+export function deleteCompany(id: string): Promise<void> {
+  return request<void>(`/companies/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function listResumeVersions(): Promise<ResumeVersion[]> {
+  return request<ResumeVersion[]>("/resume-versions");
+}
+
+export function createResumeVersion(payload: ResumeVersionPayload): Promise<ResumeVersion> {
+  return request<ResumeVersion>("/resume-versions", {
+    method: "POST",
+    body: JSON.stringify(compactPayload(payload)),
+  });
+}
+
+export function updateResumeVersion(id: string, payload: Partial<ResumeVersionPayload>): Promise<ResumeVersion> {
+  return request<ResumeVersion>(`/resume-versions/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(compactPayload(payload)),
+  });
+}
+
+export function deleteResumeVersion(id: string): Promise<void> {
+  return request<void>(`/resume-versions/${id}`, {
+    method: "DELETE",
+  });
 }

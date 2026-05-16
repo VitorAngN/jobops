@@ -126,13 +126,17 @@ http://localhost:5173
 Fluxos validados visualmente:
 
 - dashboard com metricas principais;
+- graficos por status e area;
 - cadastro rapido de vaga;
 - listagem paginada de candidaturas;
 - filtros por status, area e busca textual;
 - atualizacao rapida de status;
+- exportacao em CSV e Excel;
 - painel lateral de detalhes;
+- edicao completa e exclusao de candidaturas;
 - historico de interacoes;
 - criacao e conclusao de follow-ups.
+- CRUD visual de empresas e versoes de curriculo.
 
 Screenshots:
 
@@ -163,8 +167,8 @@ npm run test
 Resultado validado:
 
 ```text
-Test Files  2 passed (2)
-Tests       5 passed (5)
+Test Files  3 passed (3)
+Tests       7 passed (7)
 ```
 
 Build completo:

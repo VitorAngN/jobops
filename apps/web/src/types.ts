@@ -42,6 +42,11 @@ export type Company = {
   name: string;
   website?: string | null;
   sector?: string | null;
+  location?: string | null;
+  notes?: string | null;
+  _count?: {
+    applications: number;
+  };
 };
 
 export type ResumeVersion = {
@@ -49,6 +54,11 @@ export type ResumeVersion = {
   name: string;
   language: "PT_BR" | "EN" | "ES";
   focus: "BACKEND" | "DEVOPS" | "CLOUD" | "FULLSTACK" | "GENERAL";
+  fileUrl?: string | null;
+  notes?: string | null;
+  _count?: {
+    applications: number;
+  };
 };
 
 export type JobApplication = {
@@ -121,6 +131,16 @@ export type MetricsSummary = {
   interviewRate: number;
 };
 
+export type StatusMetric = {
+  status: ApplicationStatus;
+  total: number;
+};
+
+export type AreaMetric = {
+  area: ApplicationArea;
+  total: number;
+};
+
 export type ApplicationFilters = {
   search?: string;
   status?: ApplicationStatus | "";
@@ -141,6 +161,7 @@ export type CreateApplicationPayload = {
   contractType: ContractType;
   sourcePlatform: SourcePlatform;
   jobUrl?: string;
+  resumeVersionId?: string;
   status: ApplicationStatus;
   fitScore?: number;
   appliedAt?: string;
@@ -171,4 +192,20 @@ export type CreateReminderPayload = {
   title: string;
   dueAt: string;
   done?: boolean;
+};
+
+export type CompanyPayload = {
+  name: string;
+  website?: string;
+  sector?: string;
+  location?: string;
+  notes?: string;
+};
+
+export type ResumeVersionPayload = {
+  name: string;
+  language: ResumeVersion["language"];
+  focus: ResumeVersion["focus"];
+  fileUrl?: string;
+  notes?: string;
 };

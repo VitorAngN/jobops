@@ -1,27 +1,45 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
+  Building2,
   BriefcaseBusiness,
   CalendarClock,
   CheckCircle2,
+  Download,
   ExternalLink,
+  FileText,
+  LineChart,
   MessageSquare,
+  Pencil,
   Plus,
   RefreshCcw,
+  Save,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 
 import {
+  createCompany,
   createApplication,
   createInteraction,
   createReminder,
+  createResumeVersion,
+  deleteApplication,
+  deleteCompany,
+  deleteResumeVersion,
   getApplication,
+  getMetricsByArea,
+  getMetricsByStatus,
   getMetricsSummary,
   listApplications,
+  listCompanies,
   listReminders,
+  listResumeVersions,
+  updateCompany,
   updateApplication,
   updateReminder,
+  updateResumeVersion,
 } from "./api";
 import type {
   ApplicationDetail,
@@ -29,6 +47,9 @@ import type {
   ApplicationFilters,
   ApplicationLevel,
   ApplicationStatus,
+  AreaMetric,
+  Company,
+  CompanyPayload,
   ContractType,
   CreateInteractionPayload,
   CreateApplicationPayload,
@@ -38,7 +59,10 @@ import type {
   MetricsSummary,
   PaginationMeta,
   Reminder,
+  ResumeVersion,
+  ResumeVersionPayload,
   SourcePlatform,
+  StatusMetric,
   WorkMode,
 } from "./types";
 
@@ -115,6 +139,20 @@ const interactionLabels: Record<InteractionType, string> = {
   NOTE: "Nota",
 };
 
+const resumeLanguageLabels: Record<ResumeVersion["language"], string> = {
+  PT_BR: "Portugues",
+  EN: "Ingles",
+  ES: "Espanhol",
+};
+
+const resumeFocusLabels: Record<ResumeVersion["focus"], string> = {
+  BACKEND: "Back-end",
+  DEVOPS: "DevOps",
+  CLOUD: "Cloud",
+  FULLSTACK: "Full-stack",
+  GENERAL: "Geral",
+};
+
 const statusOptions = Object.keys(statusLabels) as ApplicationStatus[];
 const areaOptions = Object.keys(areaLabels) as ApplicationArea[];
 const levelOptions = Object.keys(levelLabels) as ApplicationLevel[];
@@ -122,6 +160,8 @@ const workModeOptions = Object.keys(workModeLabels) as WorkMode[];
 const contractOptions = Object.keys(contractLabels) as ContractType[];
 const sourceOptions = Object.keys(sourceLabels) as SourcePlatform[];
 const interactionOptions = Object.keys(interactionLabels) as InteractionType[];
+const resumeLanguageOptions = Object.keys(resumeLanguageLabels) as ResumeVersion["language"][];
+const resumeFocusOptions = Object.keys(resumeFocusLabels) as ResumeVersion["focus"][];
 
 const initialForm: CreateApplicationPayload = {
   companyName: "",
@@ -133,6 +173,7 @@ const initialForm: CreateApplicationPayload = {
   contractType: "INTERNSHIP",
   sourcePlatform: "LINKEDIN",
   jobUrl: "",
+  resumeVersionId: "",
   status: "SAVED",
   fitScore: undefined,
   appliedAt: "",
@@ -173,11 +214,145 @@ const initialReminderForm: CreateReminderPayload = {
   dueAt: "",
 };
 
+const initialCompanyForm: CompanyPayload = {
+  name: "",
+  website: "",
+  sector: "",
+  location: "",
+  notes: "",
+};
+
+const initialResumeForm: ResumeVersionPayload = {
+  name: "",
+  language: "PT_BR",
+  focus: "GENERAL",
+  fileUrl: "",
+  notes: "",
+};
+
 function formatDate(value?: string | null): string {
   if (!value) return "-";
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" }).format(
     new Date(value),
   );
+}
+
+function toDateInput(value?: string | null): string {
+  if (!value) return "";
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function applicationToForm(application: ApplicationDetail): CreateApplicationPayload {
+  return {
+    companyName: application.company.name,
+    title: application.title,
+    area: application.area,
+    level: application.level,
+    workMode: application.workMode,
+    location: application.location ?? "",
+    contractType: application.contractType,
+    sourcePlatform: application.sourcePlatform,
+    jobUrl: application.jobUrl ?? "",
+    resumeVersionId: application.resumeVersion?.id ?? "",
+    status: application.status,
+    fitScore: application.fitScore ?? undefined,
+    appliedAt: toDateInput(application.appliedAt),
+    nextAction: application.nextAction ?? "",
+    followUpAt: toDateInput(application.followUpAt),
+    notes: application.notes ?? "",
+  };
+}
+
+function escapeCsv(value: unknown): string {
+  const normalized = value === null || value === undefined ? "" : String(value);
+  return `"${normalized.replaceAll('"', '""')}"`;
+}
+
+function downloadFile(filename: string, contents: string, type: string) {
+  const blob = new Blob([contents], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+function buildExportRows(applications: JobApplication[]) {
+  return applications.map((application) => ({
+    empresa: application.company.name,
+    vaga: application.title,
+    status: statusLabels[application.status],
+    area: areaLabels[application.area],
+    nivel: levelLabels[application.level],
+    modalidade: workModeLabels[application.workMode],
+    contrato: contractLabels[application.contractType],
+    plataforma: sourceLabels[application.sourcePlatform],
+    fit: application.fitScore ?? "",
+    aplicacao: formatDate(application.appliedAt),
+    curriculo: application.resumeVersion?.name ?? "",
+    proximaAcao: application.nextAction ?? "",
+    link: application.jobUrl ?? "",
+    observacoes: application.notes ?? "",
+  }));
+}
+
+function toCsv(applications: JobApplication[]): string {
+  const rows = buildExportRows(applications);
+  const headers = Object.keys(rows[0] ?? {
+    empresa: "",
+    vaga: "",
+    status: "",
+    area: "",
+    nivel: "",
+    modalidade: "",
+    contrato: "",
+    plataforma: "",
+    fit: "",
+    aplicacao: "",
+    curriculo: "",
+    proximaAcao: "",
+    link: "",
+    observacoes: "",
+  });
+
+  return [
+    headers.map(escapeCsv).join(","),
+    ...rows.map((row) => headers.map((header) => escapeCsv(row[header as keyof typeof row])).join(",")),
+  ].join("\n");
+}
+
+function toExcelHtml(applications: JobApplication[]): string {
+  const rows = buildExportRows(applications);
+  const headers = Object.keys(rows[0] ?? {
+    empresa: "",
+    vaga: "",
+    status: "",
+    area: "",
+    nivel: "",
+    modalidade: "",
+    contrato: "",
+    plataforma: "",
+    fit: "",
+    aplicacao: "",
+    curriculo: "",
+    proximaAcao: "",
+    link: "",
+    observacoes: "",
+  });
+
+  const escapeHtml = (value: unknown) =>
+    String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+
+  return `<!doctype html><html><head><meta charset="utf-8" /></head><body><table><thead><tr>${headers
+    .map((header) => `<th>${escapeHtml(header)}</th>`)
+    .join("")}</tr></thead><tbody>${rows
+    .map((row) => `<tr>${headers.map((header) => `<td>${escapeHtml(row[header as keyof typeof row])}</td>`).join("")}</tr>`)
+    .join("")}</tbody></table></body></html>`;
 }
 
 function statusClass(status: ApplicationStatus): string {
@@ -195,8 +370,12 @@ function metricItems(metrics: MetricsSummary) {
 
 export function App() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [resumeVersions, setResumeVersions] = useState<ResumeVersion[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [metrics, setMetrics] = useState<MetricsSummary>(emptyMetrics);
+  const [statusMetrics, setStatusMetrics] = useState<StatusMetric[]>([]);
+  const [areaMetrics, setAreaMetrics] = useState<AreaMetric[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta>(emptyPagination);
   const [filters, setFilters] = useState<ApplicationFilters>({
     search: "",
@@ -208,6 +387,11 @@ export function App() {
     sortOrder: "desc",
   });
   const [form, setForm] = useState<CreateApplicationPayload>(initialForm);
+  const [editForm, setEditForm] = useState<CreateApplicationPayload>(initialForm);
+  const [companyForm, setCompanyForm] = useState<CompanyPayload>(initialCompanyForm);
+  const [resumeForm, setResumeForm] = useState<ResumeVersionPayload>(initialResumeForm);
+  const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
+  const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
   const [selectedApplication, setSelectedApplication] = useState<ApplicationDetail | null>(null);
   const [interactionForm, setInteractionForm] = useState<CreateInteractionPayload>(initialInteractionForm);
   const [reminderForm, setReminderForm] = useState<CreateReminderPayload>(initialReminderForm);
@@ -216,21 +400,30 @@ export function App() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function loadData(nextFilters = filters) {
     setLoading(true);
     setError(null);
 
     try {
-      const [summary, page, pendingReminders] = await Promise.all([
+      const [summary, page, pendingReminders, companyList, resumeList, byStatus, byArea] = await Promise.all([
         getMetricsSummary(),
         listApplications(nextFilters),
         listReminders(),
+        listCompanies(),
+        listResumeVersions(),
+        getMetricsByStatus(),
+        getMetricsByArea(),
       ]);
       setMetrics(summary);
       setApplications(page.data);
       setPagination(page.meta);
       setReminders(pendingReminders);
+      setCompanies(companyList);
+      setResumeVersions(resumeList);
+      setStatusMetrics(byStatus);
+      setAreaMetrics(byArea);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Nao foi possivel carregar os dados.");
     } finally {
@@ -252,6 +445,7 @@ export function App() {
     event.preventDefault();
     setSaving(true);
     setError(null);
+    setSuccess(null);
 
     try {
       await createApplication({
@@ -259,6 +453,7 @@ export function App() {
         fitScore: form.fitScore === undefined || Number.isNaN(form.fitScore) ? undefined : Number(form.fitScore),
       });
       setForm(initialForm);
+      setSuccess("Candidatura salva com sucesso.");
       await loadData();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Nao foi possivel salvar a candidatura.");
@@ -298,6 +493,7 @@ export function App() {
   async function refreshApplicationDetail(applicationId: string) {
     const detail = await getApplication(applicationId);
     setSelectedApplication(detail);
+    setEditForm(applicationToForm(detail));
   }
 
   async function handleOpenDetail(applicationId: string) {
@@ -369,6 +565,185 @@ export function App() {
     }
   }
 
+  async function handleUpdateSelectedApplication(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!selectedApplication) return;
+
+    setDetailLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await updateApplication(selectedApplication.id, {
+        ...editForm,
+        fitScore:
+          editForm.fitScore === undefined || Number.isNaN(editForm.fitScore) ? undefined : Number(editForm.fitScore),
+      });
+      await refreshApplicationDetail(selectedApplication.id);
+      await loadData();
+      setSuccess("Candidatura atualizada com sucesso.");
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Nao foi possivel atualizar a candidatura.");
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  async function handleDeleteSelectedApplication() {
+    if (!selectedApplication) return;
+
+    const confirmed = window.confirm(`Excluir a candidatura "${selectedApplication.title}"?`);
+    if (!confirmed) return;
+
+    setDetailLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await deleteApplication(selectedApplication.id);
+      setSelectedApplication(null);
+      await loadData();
+      setSuccess("Candidatura excluida.");
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Nao foi possivel excluir a candidatura.");
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  async function handleExport(format: "csv" | "xls") {
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const exportPage = await listApplications({ ...filters, page: 1, pageSize: 100 });
+      const filenameDate = new Date().toISOString().slice(0, 10);
+
+      if (format === "csv") {
+        downloadFile(
+          `jobops-candidaturas-${filenameDate}.csv`,
+          toCsv(exportPage.data),
+          "text/csv;charset=utf-8",
+        );
+      } else {
+        downloadFile(
+          `jobops-candidaturas-${filenameDate}.xls`,
+          toExcelHtml(exportPage.data),
+          "application/vnd.ms-excel;charset=utf-8",
+        );
+      }
+
+      setSuccess(`Exportacao ${format.toUpperCase()} gerada com ${exportPage.data.length} candidaturas.`);
+    } catch (exportError) {
+      setError(exportError instanceof Error ? exportError.message : "Nao foi possivel exportar os dados.");
+    }
+  }
+
+  async function handleSaveCompany(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      if (editingCompanyId) {
+        await updateCompany(editingCompanyId, companyForm);
+        setSuccess("Empresa atualizada.");
+      } else {
+        await createCompany(companyForm);
+        setSuccess("Empresa cadastrada.");
+      }
+
+      setCompanyForm(initialCompanyForm);
+      setEditingCompanyId(null);
+      await loadData();
+    } catch (companyError) {
+      setError(companyError instanceof Error ? companyError.message : "Nao foi possivel salvar a empresa.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteCompany(company: Company) {
+    const confirmed = window.confirm(`Excluir a empresa "${company.name}"? Candidaturas vinculadas tambem podem ser afetadas.`);
+    if (!confirmed) return;
+
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await deleteCompany(company.id);
+      await loadData();
+      setSuccess("Empresa excluida.");
+    } catch (companyError) {
+      setError(companyError instanceof Error ? companyError.message : "Nao foi possivel excluir a empresa.");
+    }
+  }
+
+  async function handleSaveResume(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      if (editingResumeId) {
+        await updateResumeVersion(editingResumeId, resumeForm);
+        setSuccess("Curriculo atualizado.");
+      } else {
+        await createResumeVersion(resumeForm);
+        setSuccess("Curriculo cadastrado.");
+      }
+
+      setResumeForm(initialResumeForm);
+      setEditingResumeId(null);
+      await loadData();
+    } catch (resumeError) {
+      setError(resumeError instanceof Error ? resumeError.message : "Nao foi possivel salvar o curriculo.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteResume(resume: ResumeVersion) {
+    const confirmed = window.confirm(`Excluir a versao de curriculo "${resume.name}"?`);
+    if (!confirmed) return;
+
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await deleteResumeVersion(resume.id);
+      await loadData();
+      setSuccess("Curriculo excluido.");
+    } catch (resumeError) {
+      setError(resumeError instanceof Error ? resumeError.message : "Nao foi possivel excluir o curriculo.");
+    }
+  }
+
+  function startCompanyEdit(company: Company) {
+    setEditingCompanyId(company.id);
+    setCompanyForm({
+      name: company.name,
+      website: company.website ?? "",
+      sector: company.sector ?? "",
+      location: company.location ?? "",
+      notes: company.notes ?? "",
+    });
+  }
+
+  function startResumeEdit(resume: ResumeVersion) {
+    setEditingResumeId(resume.id);
+    setResumeForm({
+      name: resume.name,
+      language: resume.language,
+      focus: resume.focus,
+      fileUrl: resume.fileUrl ?? "",
+      notes: resume.notes ?? "",
+    });
+  }
+
   return (
     <main className="app-shell">
       <section className="topbar" aria-label="Resumo">
@@ -384,6 +759,7 @@ export function App() {
       </section>
 
       {error ? <div className="alert">{error}</div> : null}
+      {success ? <div className="notice">{success}</div> : null}
 
       <section className="metrics-grid" aria-label="Metricas">
         {metricItems(metrics).map((item) => (
@@ -393,6 +769,56 @@ export function App() {
             <small>{item.detail}</small>
           </article>
         ))}
+      </section>
+
+      <section className="charts-grid" aria-label="Graficos">
+        <article className="panel chart-panel">
+          <div className="panel-heading compact-heading">
+            <div>
+              <p className="eyebrow">Analitico</p>
+              <h2>Status das candidaturas</h2>
+            </div>
+            <LineChart size={20} aria-hidden="true" />
+          </div>
+          <div className="bar-list">
+            {statusMetrics.map((item) => {
+              const max = Math.max(...statusMetrics.map((metric) => metric.total), 1);
+              return (
+                <div className="bar-row" key={item.status}>
+                  <span>{statusLabels[item.status]}</span>
+                  <div>
+                    <i style={{ width: `${(item.total / max) * 100}%` }} />
+                  </div>
+                  <strong>{item.total}</strong>
+                </div>
+              );
+            })}
+          </div>
+        </article>
+
+        <article className="panel chart-panel">
+          <div className="panel-heading compact-heading">
+            <div>
+              <p className="eyebrow">Distribuicao</p>
+              <h2>Areas de foco</h2>
+            </div>
+            <BarChart3 size={20} aria-hidden="true" />
+          </div>
+          <div className="bar-list">
+            {areaMetrics.map((item) => {
+              const max = Math.max(...areaMetrics.map((metric) => metric.total), 1);
+              return (
+                <div className="bar-row" key={item.area}>
+                  <span>{areaLabels[item.area]}</span>
+                  <div>
+                    <i style={{ width: `${(item.total / max) * 100}%` }} />
+                  </div>
+                  <strong>{item.total}</strong>
+                </div>
+              );
+            })}
+          </div>
+        </article>
       </section>
 
       <section className="panel reminders-panel" aria-label="Follow-ups pendentes">
@@ -604,6 +1030,21 @@ export function App() {
             </label>
 
             <label className="wide">
+              Curriculo usado
+              <select
+                value={form.resumeVersionId ?? ""}
+                onChange={(event) => setForm((current) => ({ ...current, resumeVersionId: event.target.value }))}
+              >
+                <option value="">Nao vincular curriculo</option>
+                {resumeVersions.map((resume) => (
+                  <option key={resume.id} value={resume.id}>
+                    {resume.name} - {resumeLanguageLabels[resume.language]} / {resumeFocusLabels[resume.focus]}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="wide">
               Proxima acao
               <input
                 value={form.nextAction}
@@ -634,7 +1075,16 @@ export function App() {
               <p className="eyebrow">Operacao</p>
               <h2>Vagas rastreadas</h2>
             </div>
-            <BarChart3 size={20} aria-hidden="true" />
+            <div className="panel-actions">
+              <button className="button button-secondary" type="button" onClick={() => void handleExport("csv")}>
+                <Download size={15} aria-hidden="true" />
+                CSV
+              </button>
+              <button className="button button-secondary" type="button" onClick={() => void handleExport("xls")}>
+                <Download size={15} aria-hidden="true" />
+                Excel
+              </button>
+            </div>
           </div>
 
           <div className="filters">
@@ -807,6 +1257,179 @@ export function App() {
         </section>
       </section>
 
+      <section className="management-grid" aria-label="Cadastros auxiliares">
+        <article className="panel management-panel">
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">Empresas</p>
+              <h2>Cadastro de empresas</h2>
+            </div>
+            <Building2 size={20} aria-hidden="true" />
+          </div>
+
+          <form className="compact-form" onSubmit={handleSaveCompany}>
+            <input
+              required
+              value={companyForm.name}
+              onChange={(event) => setCompanyForm((current) => ({ ...current, name: event.target.value }))}
+              placeholder="Nome da empresa"
+            />
+            <input
+              value={companyForm.sector}
+              onChange={(event) => setCompanyForm((current) => ({ ...current, sector: event.target.value }))}
+              placeholder="Setor"
+            />
+            <input
+              value={companyForm.location}
+              onChange={(event) => setCompanyForm((current) => ({ ...current, location: event.target.value }))}
+              placeholder="Localizacao"
+            />
+            <input
+              type="url"
+              value={companyForm.website}
+              onChange={(event) => setCompanyForm((current) => ({ ...current, website: event.target.value }))}
+              placeholder="https://empresa.com"
+            />
+            <textarea
+              value={companyForm.notes}
+              onChange={(event) => setCompanyForm((current) => ({ ...current, notes: event.target.value }))}
+              placeholder="Observacoes sobre empresa, recrutadores ou processo"
+            />
+            <div className="inline-actions">
+              <button className="button button-primary" type="submit" disabled={saving}>
+                {editingCompanyId ? "Atualizar empresa" : "Salvar empresa"}
+              </button>
+              {editingCompanyId ? (
+                <button
+                  className="button button-secondary"
+                  type="button"
+                  onClick={() => {
+                    setEditingCompanyId(null);
+                    setCompanyForm(initialCompanyForm);
+                  }}
+                >
+                  Cancelar
+                </button>
+              ) : null}
+            </div>
+          </form>
+
+          <div className="resource-list">
+            {companies.map((company) => (
+              <div className="resource-row" key={company.id}>
+                <div>
+                  <strong>{company.name}</strong>
+                  <span>
+                    {company.sector || "Sem setor"} - {company._count?.applications ?? 0} candidaturas
+                  </span>
+                </div>
+                <div className="row-actions">
+                  <button className="icon-button" type="button" onClick={() => startCompanyEdit(company)}>
+                    <Pencil size={15} aria-label="Editar empresa" />
+                  </button>
+                  <button className="icon-button danger-icon" type="button" onClick={() => void handleDeleteCompany(company)}>
+                    <Trash2 size={15} aria-label="Excluir empresa" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel management-panel">
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">Curriculos</p>
+              <h2>Versoes usadas</h2>
+            </div>
+            <FileText size={20} aria-hidden="true" />
+          </div>
+
+          <form className="compact-form" onSubmit={handleSaveResume}>
+            <input
+              required
+              value={resumeForm.name}
+              onChange={(event) => setResumeForm((current) => ({ ...current, name: event.target.value }))}
+              placeholder="Back-end PT-BR, DevOps EN..."
+            />
+            <select
+              value={resumeForm.language}
+              onChange={(event) =>
+                setResumeForm((current) => ({ ...current, language: event.target.value as ResumeVersion["language"] }))
+              }
+            >
+              {resumeLanguageOptions.map((language) => (
+                <option key={language} value={language}>
+                  {resumeLanguageLabels[language]}
+                </option>
+              ))}
+            </select>
+            <select
+              value={resumeForm.focus}
+              onChange={(event) =>
+                setResumeForm((current) => ({ ...current, focus: event.target.value as ResumeVersion["focus"] }))
+              }
+            >
+              {resumeFocusOptions.map((focus) => (
+                <option key={focus} value={focus}>
+                  {resumeFocusLabels[focus]}
+                </option>
+              ))}
+            </select>
+            <input
+              type="url"
+              value={resumeForm.fileUrl}
+              onChange={(event) => setResumeForm((current) => ({ ...current, fileUrl: event.target.value }))}
+              placeholder="Link do arquivo, se tiver"
+            />
+            <textarea
+              value={resumeForm.notes}
+              onChange={(event) => setResumeForm((current) => ({ ...current, notes: event.target.value }))}
+              placeholder="Quando usar esta versao?"
+            />
+            <div className="inline-actions">
+              <button className="button button-primary" type="submit" disabled={saving}>
+                {editingResumeId ? "Atualizar curriculo" : "Salvar curriculo"}
+              </button>
+              {editingResumeId ? (
+                <button
+                  className="button button-secondary"
+                  type="button"
+                  onClick={() => {
+                    setEditingResumeId(null);
+                    setResumeForm(initialResumeForm);
+                  }}
+                >
+                  Cancelar
+                </button>
+              ) : null}
+            </div>
+          </form>
+
+          <div className="resource-list">
+            {resumeVersions.map((resume) => (
+              <div className="resource-row" key={resume.id}>
+                <div>
+                  <strong>{resume.name}</strong>
+                  <span>
+                    {resumeLanguageLabels[resume.language]} - {resumeFocusLabels[resume.focus]} -{" "}
+                    {resume._count?.applications ?? 0} candidaturas
+                  </span>
+                </div>
+                <div className="row-actions">
+                  <button className="icon-button" type="button" onClick={() => startResumeEdit(resume)}>
+                    <Pencil size={15} aria-label="Editar curriculo" />
+                  </button>
+                  <button className="icon-button danger-icon" type="button" onClick={() => void handleDeleteResume(resume)}>
+                    <Trash2 size={15} aria-label="Excluir curriculo" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
       {selectedApplication ? (
         <aside className="detail-drawer" aria-label="Detalhes da candidatura">
           <div className="detail-panel">
@@ -841,6 +1464,205 @@ export function App() {
             </div>
 
             {selectedApplication.notes ? <p className="detail-notes">{selectedApplication.notes}</p> : null}
+
+            <section className="detail-section">
+              <div className="detail-section-title">
+                <Pencil size={16} aria-hidden="true" />
+                <h3>Editar candidatura</h3>
+              </div>
+
+              <form className="edit-form" onSubmit={handleUpdateSelectedApplication}>
+                <label>
+                  Empresa
+                  <input
+                    required
+                    value={editForm.companyName}
+                    onChange={(event) => setEditForm((current) => ({ ...current, companyName: event.target.value }))}
+                  />
+                </label>
+                <label>
+                  Cargo
+                  <input
+                    required
+                    value={editForm.title}
+                    onChange={(event) => setEditForm((current) => ({ ...current, title: event.target.value }))}
+                  />
+                </label>
+                <label>
+                  Status
+                  <select
+                    value={editForm.status}
+                    onChange={(event) =>
+                      setEditForm((current) => ({ ...current, status: event.target.value as ApplicationStatus }))
+                    }
+                  >
+                    {statusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {statusLabels[status]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Area
+                  <select
+                    value={editForm.area}
+                    onChange={(event) =>
+                      setEditForm((current) => ({ ...current, area: event.target.value as ApplicationArea }))
+                    }
+                  >
+                    {areaOptions.map((area) => (
+                      <option key={area} value={area}>
+                        {areaLabels[area]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Nivel
+                  <select
+                    value={editForm.level}
+                    onChange={(event) =>
+                      setEditForm((current) => ({ ...current, level: event.target.value as ApplicationLevel }))
+                    }
+                  >
+                    {levelOptions.map((level) => (
+                      <option key={level} value={level}>
+                        {levelLabels[level]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Modalidade
+                  <select
+                    value={editForm.workMode}
+                    onChange={(event) =>
+                      setEditForm((current) => ({ ...current, workMode: event.target.value as WorkMode }))
+                    }
+                  >
+                    {workModeOptions.map((mode) => (
+                      <option key={mode} value={mode}>
+                        {workModeLabels[mode]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Contrato
+                  <select
+                    value={editForm.contractType}
+                    onChange={(event) =>
+                      setEditForm((current) => ({ ...current, contractType: event.target.value as ContractType }))
+                    }
+                  >
+                    {contractOptions.map((contract) => (
+                      <option key={contract} value={contract}>
+                        {contractLabels[contract]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Plataforma
+                  <select
+                    value={editForm.sourcePlatform}
+                    onChange={(event) =>
+                      setEditForm((current) => ({ ...current, sourcePlatform: event.target.value as SourcePlatform }))
+                    }
+                  >
+                    {sourceOptions.map((source) => (
+                      <option key={source} value={source}>
+                        {sourceLabels[source]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Fit
+                  <input
+                    min="0"
+                    max="100"
+                    type="number"
+                    value={editForm.fitScore ?? ""}
+                    onChange={(event) =>
+                      setEditForm((current) => ({
+                        ...current,
+                        fitScore: event.target.value ? Number(event.target.value) : undefined,
+                      }))
+                    }
+                  />
+                </label>
+                <label>
+                  Aplicado em
+                  <input
+                    type="date"
+                    value={editForm.appliedAt}
+                    onChange={(event) => setEditForm((current) => ({ ...current, appliedAt: event.target.value }))}
+                  />
+                </label>
+                <label className="wide">
+                  Local
+                  <input
+                    value={editForm.location}
+                    onChange={(event) => setEditForm((current) => ({ ...current, location: event.target.value }))}
+                  />
+                </label>
+                <label className="wide">
+                  Link
+                  <input
+                    type="url"
+                    value={editForm.jobUrl}
+                    onChange={(event) => setEditForm((current) => ({ ...current, jobUrl: event.target.value }))}
+                  />
+                </label>
+                <label className="wide">
+                  Curriculo
+                  <select
+                    value={editForm.resumeVersionId ?? ""}
+                    onChange={(event) =>
+                      setEditForm((current) => ({ ...current, resumeVersionId: event.target.value }))
+                    }
+                  >
+                    <option value="">Nao vincular curriculo</option>
+                    {resumeVersions.map((resume) => (
+                      <option key={resume.id} value={resume.id}>
+                        {resume.name} - {resumeLanguageLabels[resume.language]} / {resumeFocusLabels[resume.focus]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="wide">
+                  Proxima acao
+                  <input
+                    value={editForm.nextAction}
+                    onChange={(event) => setEditForm((current) => ({ ...current, nextAction: event.target.value }))}
+                  />
+                </label>
+                <label className="wide">
+                  Observacoes
+                  <textarea
+                    value={editForm.notes}
+                    onChange={(event) => setEditForm((current) => ({ ...current, notes: event.target.value }))}
+                  />
+                </label>
+                <div className="drawer-actions wide">
+                  <button className="button button-primary" type="submit" disabled={detailLoading}>
+                    <Save size={16} aria-hidden="true" />
+                    Salvar alteracoes
+                  </button>
+                  <button
+                    className="button danger-button"
+                    type="button"
+                    disabled={detailLoading}
+                    onClick={() => void handleDeleteSelectedApplication()}
+                  >
+                    <Trash2 size={16} aria-hidden="true" />
+                    Excluir candidatura
+                  </button>
+                </div>
+              </form>
+            </section>
 
             <section className="detail-section">
               <div className="detail-section-title">
