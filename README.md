@@ -53,6 +53,16 @@ jobops/
 
 Projeto em fase de MVP inicial com API e interface web.
 
+## Screenshots
+
+Dashboard principal com metricas, cadastro rapido, filtros, tabela de candidaturas e follow-ups:
+
+![Dashboard do JobOps](docs/assets/jobops-dashboard.png)
+
+Painel de detalhes da candidatura com historico de interacoes e lembretes de follow-up:
+
+![Detalhes da candidatura](docs/assets/jobops-detail.png)
+
 ## Primeiros comandos
 
 ```bash
