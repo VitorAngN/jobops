@@ -1,14 +1,39 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { BarChart3, BriefcaseBusiness, CalendarClock, ExternalLink, Plus, RefreshCcw, Search } from "lucide-react";
+import {
+  BarChart3,
+  BriefcaseBusiness,
+  CalendarClock,
+  CheckCircle2,
+  ExternalLink,
+  MessageSquare,
+  Plus,
+  RefreshCcw,
+  Search,
+  X,
+} from "lucide-react";
 
-import { createApplication, getMetricsSummary, listApplications, listReminders, updateApplication } from "./api";
+import {
+  createApplication,
+  createInteraction,
+  createReminder,
+  getApplication,
+  getMetricsSummary,
+  listApplications,
+  listReminders,
+  updateApplication,
+  updateReminder,
+} from "./api";
 import type {
+  ApplicationDetail,
   ApplicationArea,
   ApplicationFilters,
   ApplicationLevel,
   ApplicationStatus,
   ContractType,
+  CreateInteractionPayload,
   CreateApplicationPayload,
+  CreateReminderPayload,
+  InteractionType,
   JobApplication,
   MetricsSummary,
   PaginationMeta,
@@ -81,12 +106,22 @@ const sourceLabels: Record<SourcePlatform, string> = {
   OTHER: "Outro",
 };
 
+const interactionLabels: Record<InteractionType, string> = {
+  MESSAGE: "Mensagem",
+  EMAIL: "Email",
+  INTERVIEW: "Entrevista",
+  TEST: "Teste",
+  FEEDBACK: "Feedback",
+  NOTE: "Nota",
+};
+
 const statusOptions = Object.keys(statusLabels) as ApplicationStatus[];
 const areaOptions = Object.keys(areaLabels) as ApplicationArea[];
 const levelOptions = Object.keys(levelLabels) as ApplicationLevel[];
 const workModeOptions = Object.keys(workModeLabels) as WorkMode[];
 const contractOptions = Object.keys(contractLabels) as ContractType[];
 const sourceOptions = Object.keys(sourceLabels) as SourcePlatform[];
+const interactionOptions = Object.keys(interactionLabels) as InteractionType[];
 
 const initialForm: CreateApplicationPayload = {
   companyName: "",
@@ -125,6 +160,19 @@ const emptyPagination: PaginationMeta = {
   hasPreviousPage: false,
 };
 
+const initialInteractionForm: CreateInteractionPayload = {
+  type: "NOTE",
+  contactName: "",
+  contactRole: "",
+  contactUrl: "",
+  description: "",
+};
+
+const initialReminderForm: CreateReminderPayload = {
+  title: "",
+  dueAt: "",
+};
+
 function formatDate(value?: string | null): string {
   if (!value) return "-";
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" }).format(
@@ -160,8 +208,12 @@ export function App() {
     sortOrder: "desc",
   });
   const [form, setForm] = useState<CreateApplicationPayload>(initialForm);
+  const [selectedApplication, setSelectedApplication] = useState<ApplicationDetail | null>(null);
+  const [interactionForm, setInteractionForm] = useState<CreateInteractionPayload>(initialInteractionForm);
+  const [reminderForm, setReminderForm] = useState<CreateReminderPayload>(initialReminderForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -243,6 +295,80 @@ export function App() {
     }
   }
 
+  async function refreshApplicationDetail(applicationId: string) {
+    const detail = await getApplication(applicationId);
+    setSelectedApplication(detail);
+  }
+
+  async function handleOpenDetail(applicationId: string) {
+    setDetailLoading(true);
+    setError(null);
+
+    try {
+      await refreshApplicationDetail(applicationId);
+    } catch (detailError) {
+      setError(detailError instanceof Error ? detailError.message : "Nao foi possivel abrir os detalhes.");
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  async function handleCreateInteraction(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!selectedApplication) return;
+
+    setDetailLoading(true);
+    setError(null);
+
+    try {
+      await createInteraction(selectedApplication.id, interactionForm);
+      setInteractionForm(initialInteractionForm);
+      await refreshApplicationDetail(selectedApplication.id);
+    } catch (interactionError) {
+      setError(interactionError instanceof Error ? interactionError.message : "Nao foi possivel registrar a interacao.");
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  async function handleCreateReminder(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!selectedApplication) return;
+
+    setDetailLoading(true);
+    setError(null);
+
+    try {
+      await createReminder(selectedApplication.id, reminderForm);
+      setReminderForm(initialReminderForm);
+      await refreshApplicationDetail(selectedApplication.id);
+      await loadData();
+    } catch (reminderError) {
+      setError(reminderError instanceof Error ? reminderError.message : "Nao foi possivel criar o follow-up.");
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  async function handleCompleteReminder(reminderId: string) {
+    if (!selectedApplication) return;
+
+    setDetailLoading(true);
+    setError(null);
+
+    try {
+      await updateReminder(reminderId, { done: true });
+      await refreshApplicationDetail(selectedApplication.id);
+      await loadData();
+    } catch (reminderError) {
+      setError(reminderError instanceof Error ? reminderError.message : "Nao foi possivel concluir o lembrete.");
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <section className="topbar" aria-label="Resumo">
@@ -280,7 +406,12 @@ export function App() {
 
         <div className="reminder-list">
           {reminders.slice(0, 4).map((reminder) => (
-            <article className="reminder-item" key={reminder.id}>
+            <button
+              className="reminder-item"
+              key={reminder.id}
+              type="button"
+              onClick={() => void handleOpenDetail(reminder.application.id)}
+            >
               <div>
                 <strong>{reminder.title}</strong>
                 <span>
@@ -288,7 +419,7 @@ export function App() {
                 </span>
               </div>
               <time>{formatDate(reminder.dueAt)}</time>
-            </article>
+            </button>
           ))}
 
           {!loading && reminders.length === 0 ? <p className="empty-inline">Nenhum follow-up pendente.</p> : null}
@@ -579,6 +710,7 @@ export function App() {
                   <th>Aplicacao</th>
                   <th>Acao</th>
                   <th>Link</th>
+                  <th>Detalhes</th>
                 </tr>
               </thead>
               <tbody>
@@ -628,12 +760,21 @@ export function App() {
                         "-"
                       )}
                     </td>
+                    <td>
+                      <button
+                        className="table-action"
+                        type="button"
+                        onClick={() => void handleOpenDetail(application.id)}
+                      >
+                        Abrir
+                      </button>
+                    </td>
                   </tr>
                 ))}
 
                 {!loading && applications.length === 0 ? (
                   <tr>
-                    <td className="empty-state" colSpan={9}>
+                    <td className="empty-state" colSpan={10}>
                       Nenhuma vaga encontrada.
                     </td>
                   </tr>
@@ -665,6 +806,158 @@ export function App() {
           </div>
         </section>
       </section>
+
+      {selectedApplication ? (
+        <aside className="detail-drawer" aria-label="Detalhes da candidatura">
+          <div className="detail-panel">
+            <div className="detail-header">
+              <div>
+                <p className="eyebrow">Candidatura</p>
+                <h2>{selectedApplication.title}</h2>
+                <span>{selectedApplication.company.name}</span>
+              </div>
+              <button className="icon-button" type="button" onClick={() => setSelectedApplication(null)}>
+                <X size={18} aria-label="Fechar detalhes" />
+              </button>
+            </div>
+
+            <div className="detail-grid">
+              <div>
+                <small>Status</small>
+                <strong>{statusLabels[selectedApplication.status]}</strong>
+              </div>
+              <div>
+                <small>Fit</small>
+                <strong>{selectedApplication.fitScore ?? "-"}</strong>
+              </div>
+              <div>
+                <small>Aplicacao</small>
+                <strong>{formatDate(selectedApplication.appliedAt)}</strong>
+              </div>
+              <div>
+                <small>Retorno</small>
+                <strong>{formatDate(selectedApplication.lastResponseAt)}</strong>
+              </div>
+            </div>
+
+            {selectedApplication.notes ? <p className="detail-notes">{selectedApplication.notes}</p> : null}
+
+            <section className="detail-section">
+              <div className="detail-section-title">
+                <MessageSquare size={16} aria-hidden="true" />
+                <h3>Historico</h3>
+              </div>
+
+              <div className="timeline">
+                {selectedApplication.interactions.map((interaction) => (
+                  <article className="timeline-item" key={interaction.id}>
+                    <div>
+                      <strong>{interactionLabels[interaction.type]}</strong>
+                      <span>{formatDate(interaction.happenedAt)}</span>
+                    </div>
+                    <p>{interaction.description}</p>
+                    {interaction.contactName ? (
+                      <small>
+                        {interaction.contactName}
+                        {interaction.contactRole ? ` - ${interaction.contactRole}` : ""}
+                      </small>
+                    ) : null}
+                  </article>
+                ))}
+
+                {selectedApplication.interactions.length === 0 ? (
+                  <p className="empty-inline">Nenhuma interacao registrada.</p>
+                ) : null}
+              </div>
+
+              <form className="inline-form" onSubmit={handleCreateInteraction}>
+                <select
+                  value={interactionForm.type}
+                  onChange={(event) =>
+                    setInteractionForm((current) => ({ ...current, type: event.target.value as InteractionType }))
+                  }
+                >
+                  {interactionOptions.map((type) => (
+                    <option key={type} value={type}>
+                      {interactionLabels[type]}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={interactionForm.contactName}
+                  onChange={(event) => setInteractionForm((current) => ({ ...current, contactName: event.target.value }))}
+                  placeholder="Contato"
+                />
+                <input
+                  value={interactionForm.contactRole}
+                  onChange={(event) => setInteractionForm((current) => ({ ...current, contactRole: event.target.value }))}
+                  placeholder="Cargo"
+                />
+                <textarea
+                  required
+                  value={interactionForm.description}
+                  onChange={(event) =>
+                    setInteractionForm((current) => ({ ...current, description: event.target.value }))
+                  }
+                  placeholder="O que aconteceu?"
+                />
+                <button className="button button-primary" type="submit" disabled={detailLoading}>
+                  Registrar interacao
+                </button>
+              </form>
+            </section>
+
+            <section className="detail-section">
+              <div className="detail-section-title">
+                <CalendarClock size={16} aria-hidden="true" />
+                <h3>Follow-ups</h3>
+              </div>
+
+              <div className="timeline">
+                {selectedApplication.reminders.map((reminder) => (
+                  <article className="timeline-item reminder-row" key={reminder.id}>
+                    <div>
+                      <strong>{reminder.title}</strong>
+                      <span>{formatDate(reminder.dueAt)}</span>
+                    </div>
+                    <button
+                      className="complete-button"
+                      type="button"
+                      disabled={reminder.done || detailLoading}
+                      onClick={() => void handleCompleteReminder(reminder.id)}
+                    >
+                      <CheckCircle2 size={15} aria-hidden="true" />
+                      {reminder.done ? "Concluido" : "Concluir"}
+                    </button>
+                  </article>
+                ))}
+
+                {selectedApplication.reminders.length === 0 ? (
+                  <p className="empty-inline">Nenhum follow-up criado.</p>
+                ) : null}
+              </div>
+
+              <form className="inline-form two-columns" onSubmit={handleCreateReminder}>
+                <input
+                  required
+                  value={reminderForm.title}
+                  onChange={(event) => setReminderForm((current) => ({ ...current, title: event.target.value }))}
+                  placeholder="Titulo do follow-up"
+                />
+                <input
+                  required
+                  type="date"
+                  value={reminderForm.dueAt}
+                  onChange={(event) => setReminderForm((current) => ({ ...current, dueAt: event.target.value }))}
+                />
+                <button className="button button-primary" type="submit" disabled={detailLoading}>
+                  Criar follow-up
+                </button>
+              </form>
+            </section>
+          </div>
+        </aside>
+      ) : null}
     </main>
   );
 }

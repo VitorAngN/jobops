@@ -40,6 +40,9 @@ Primeira versao do `apps/web`:
 - ordenacao por data, fit, empresa e cargo;
 - tabela paginada com empresa, vaga, status editavel, fit, data, proxima acao e link;
 - painel de follow-ups ativos;
+- painel lateral de detalhes com historico de interacoes;
+- criacao manual de interacoes e follow-ups;
+- conclusao de lembretes pela interface;
 - integracao direta com a API em `/api/applications` e `/api/metrics/summary`.
 
 ## Tela de vagas

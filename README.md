@@ -91,4 +91,5 @@ http://127.0.0.1:5173
 - GitHub Actions com typecheck e build de API/Web.
 - Listagem paginada, ordenavel e filtravel de candidaturas.
 - Atualizacao rapida de status e geracao de lembretes de follow-up.
+- Painel de detalhes para registrar interacoes, criar follow-ups e concluir lembretes.
 - Testes unitarios para regras de lifecycle e paginacao.

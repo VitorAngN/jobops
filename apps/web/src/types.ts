@@ -80,6 +80,23 @@ export type JobApplication = {
   };
 };
 
+export type InteractionType = "MESSAGE" | "EMAIL" | "INTERVIEW" | "TEST" | "FEEDBACK" | "NOTE";
+
+export type Interaction = {
+  id: string;
+  type: InteractionType;
+  contactName?: string | null;
+  contactRole?: string | null;
+  contactUrl?: string | null;
+  happenedAt: string;
+  description: string;
+};
+
+export type ApplicationDetail = JobApplication & {
+  interactions: Interaction[];
+  reminders: Array<Omit<Reminder, "application">>;
+};
+
 export type PaginationMeta = {
   page: number;
   pageSize: number;
@@ -140,4 +157,18 @@ export type Reminder = {
   dueAt: string;
   done: boolean;
   application: JobApplication;
+};
+
+export type CreateInteractionPayload = {
+  type: InteractionType;
+  contactName?: string;
+  contactRole?: string;
+  contactUrl?: string;
+  description: string;
+};
+
+export type CreateReminderPayload = {
+  title: string;
+  dueAt: string;
+  done?: boolean;
 };

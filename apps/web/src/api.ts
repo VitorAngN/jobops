@@ -1,6 +1,9 @@
 import type {
   ApplicationFilters,
+  ApplicationDetail,
+  CreateInteractionPayload,
   CreateApplicationPayload,
+  CreateReminderPayload,
   JobApplication,
   MetricsSummary,
   PaginatedResponse,
@@ -65,6 +68,31 @@ export function createApplication(payload: CreateApplicationPayload): Promise<Jo
 
 export function updateApplication(id: string, payload: UpdateApplicationPayload): Promise<JobApplication> {
   return request<JobApplication>(`/applications/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(compactPayload(payload)),
+  });
+}
+
+export function getApplication(id: string): Promise<ApplicationDetail> {
+  return request<ApplicationDetail>(`/applications/${id}`);
+}
+
+export function createInteraction(applicationId: string, payload: CreateInteractionPayload) {
+  return request(`/applications/${applicationId}/interactions`, {
+    method: "POST",
+    body: JSON.stringify(compactPayload(payload)),
+  });
+}
+
+export function createReminder(applicationId: string, payload: CreateReminderPayload) {
+  return request(`/applications/${applicationId}/reminders`, {
+    method: "POST",
+    body: JSON.stringify(compactPayload(payload)),
+  });
+}
+
+export function updateReminder(id: string, payload: { done?: boolean; title?: string; dueAt?: string }) {
+  return request(`/reminders/${id}`, {
     method: "PATCH",
     body: JSON.stringify(compactPayload(payload)),
   });

@@ -2,6 +2,15 @@
 
 Interface web do JobOps para registrar candidaturas, acompanhar status, filtrar vagas e visualizar metricas do funil.
 
+## Fluxos implementados
+
+- Cadastro de candidatura.
+- Filtros, ordenacao e paginacao.
+- Atualizacao rapida de status.
+- Painel de detalhes da candidatura.
+- Registro de interacoes com recrutadores.
+- Criacao e conclusao de follow-ups.
+
 ## Rodar localmente
 
 ```bash
