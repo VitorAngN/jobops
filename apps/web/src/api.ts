@@ -32,7 +32,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(body || `Request failed with status ${response.status}`);
+    let parsedMessage: string | undefined;
+
+    try {
+      const parsed = JSON.parse(body) as { message?: string; error?: string };
+      parsedMessage = parsed.message ?? parsed.error;
+    } catch {
+      parsedMessage = undefined;
+    }
+
+    throw new Error(parsedMessage ?? (body || `Request failed with status ${response.status}`));
   }
 
   if (response.status === 204) {

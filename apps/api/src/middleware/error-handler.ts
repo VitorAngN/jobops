@@ -26,6 +26,13 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
     });
   }
 
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return response.status(503).json({
+      error: "DatabaseUnavailable",
+      message: "Database is unavailable. Start PostgreSQL and run the Prisma migrations.",
+    });
+  }
+
   console.error(error);
 
   return response.status(500).json({
