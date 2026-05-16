@@ -14,13 +14,21 @@ import type {
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3333/api";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-    ...options,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+      },
+      ...options,
+    });
+  } catch {
+    throw new Error(
+      `API indisponivel. Confira se o backend esta rodando em ${API_URL} e se o banco PostgreSQL foi iniciado.`,
+    );
+  }
 
   if (!response.ok) {
     const body = await response.text();
