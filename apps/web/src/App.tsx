@@ -9,6 +9,7 @@ import {
   ExternalLink,
   FileText,
   LineChart,
+  Menu,
   MessageSquare,
   Pencil,
   Plus,
@@ -369,6 +370,7 @@ function metricItems(metrics: MetricsSummary) {
 }
 
 export function App() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [resumeVersions, setResumeVersions] = useState<ResumeVersion[]>([]);
@@ -744,22 +746,92 @@ export function App() {
     });
   }
 
+  function navigateToSection(sectionId: string) {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setMenuOpen(false);
+  }
+
   return (
-    <main className="app-shell">
-      <section className="topbar" aria-label="Resumo">
-        <div>
-          <p className="eyebrow">JobOps</p>
-          <h1>Pipeline de candidaturas</h1>
+    <main className="app-frame">
+      <aside className={`side-menu ${menuOpen ? "side-menu-open" : ""}`} aria-label="Menu de ferramentas">
+        <div className="side-menu-header">
+          <div className="brand-mark">JO</div>
+          <div>
+            <p className="eyebrow">JobOps</p>
+            <h2>Ferramentas</h2>
+          </div>
+          <button className="icon-button menu-close" type="button" onClick={() => setMenuOpen(false)}>
+            <X size={18} aria-label="Fechar menu" />
+          </button>
         </div>
 
-        <button className="button button-secondary" type="button" onClick={() => void loadData()} disabled={loading}>
-          <RefreshCcw size={16} aria-hidden="true" />
-          Atualizar
-        </button>
-      </section>
+        <nav className="side-nav" aria-label="Atalhos do painel">
+          <button type="button" onClick={() => navigateToSection("overview")}>
+            <BarChart3 size={18} aria-hidden="true" />
+            <span>Dashboard</span>
+          </button>
+          <button type="button" onClick={() => navigateToSection("analytics")}>
+            <LineChart size={18} aria-hidden="true" />
+            <span>Analises</span>
+          </button>
+          <button type="button" onClick={() => navigateToSection("followups")}>
+            <CalendarClock size={18} aria-hidden="true" />
+            <span>Follow-ups</span>
+          </button>
+          <button type="button" onClick={() => navigateToSection("new-application")}>
+            <Plus size={18} aria-hidden="true" />
+            <span>Nova vaga</span>
+          </button>
+          <button type="button" onClick={() => navigateToSection("applications")}>
+            <BriefcaseBusiness size={18} aria-hidden="true" />
+            <span>Vagas rastreadas</span>
+          </button>
+          <button type="button" onClick={() => navigateToSection("resources")}>
+            <Building2 size={18} aria-hidden="true" />
+            <span>Empresas e curriculos</span>
+          </button>
+        </nav>
 
-      {error ? <div className="alert">{error}</div> : null}
-      {success ? <div className="notice">{success}</div> : null}
+        <div className="side-tools">
+          <p>Acao rapida</p>
+          <button type="button" onClick={() => void loadData()} disabled={loading}>
+            <RefreshCcw size={16} aria-hidden="true" />
+            Atualizar dados
+          </button>
+          <button type="button" onClick={() => void handleExport("csv")}>
+            <Download size={16} aria-hidden="true" />
+            Exportar CSV
+          </button>
+          <button type="button" onClick={() => void handleExport("xls")}>
+            <Download size={16} aria-hidden="true" />
+            Exportar Excel
+          </button>
+        </div>
+      </aside>
+
+      {menuOpen ? <button className="menu-backdrop" type="button" aria-label="Fechar menu" onClick={() => setMenuOpen(false)} /> : null}
+
+      <div className="app-shell">
+        <section className="topbar" id="overview" aria-label="Resumo">
+          <button className="menu-toggle" type="button" onClick={() => setMenuOpen(true)}>
+            <Menu size={18} aria-hidden="true" />
+            Ferramentas
+          </button>
+
+          <div>
+            <p className="eyebrow">JobOps</p>
+            <h1>Pipeline de candidaturas</h1>
+            <span className="topbar-subtitle">Central de busca, follow-up, curriculos e empresas.</span>
+          </div>
+
+          <button className="button button-secondary" type="button" onClick={() => void loadData()} disabled={loading}>
+            <RefreshCcw size={16} aria-hidden="true" />
+            Atualizar
+          </button>
+        </section>
+
+        {error ? <div className="alert">{error}</div> : null}
+        {success ? <div className="notice">{success}</div> : null}
 
       <section className="metrics-grid" aria-label="Metricas">
         {metricItems(metrics).map((item) => (
@@ -771,7 +843,7 @@ export function App() {
         ))}
       </section>
 
-      <section className="charts-grid" aria-label="Graficos">
+      <section className="charts-grid" id="analytics" aria-label="Graficos">
         <article className="panel chart-panel">
           <div className="panel-heading compact-heading">
             <div>
@@ -821,7 +893,7 @@ export function App() {
         </article>
       </section>
 
-      <section className="panel reminders-panel" aria-label="Follow-ups pendentes">
+      <section className="panel reminders-panel" id="followups" aria-label="Follow-ups pendentes">
         <div className="panel-heading compact-heading">
           <div>
             <p className="eyebrow">Follow-ups</p>
@@ -853,7 +925,7 @@ export function App() {
       </section>
 
       <section className="workspace-grid">
-        <form className="panel form-panel" onSubmit={handleSubmit}>
+        <form className="panel form-panel" id="new-application" onSubmit={handleSubmit}>
           <div className="panel-heading">
             <div>
               <p className="eyebrow">Cadastro</p>
@@ -1069,7 +1141,7 @@ export function App() {
           </button>
         </form>
 
-        <section className="panel list-panel">
+        <section className="panel list-panel" id="applications">
           <div className="panel-heading">
             <div>
               <p className="eyebrow">Operacao</p>
@@ -1257,7 +1329,7 @@ export function App() {
         </section>
       </section>
 
-      <section className="management-grid" aria-label="Cadastros auxiliares">
+      <section className="management-grid" id="resources" aria-label="Cadastros auxiliares">
         <article className="panel management-panel">
           <div className="panel-heading">
             <div>
@@ -1780,6 +1852,7 @@ export function App() {
           </div>
         </aside>
       ) : null}
+      </div>
     </main>
   );
 }
