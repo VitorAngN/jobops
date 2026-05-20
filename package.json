@@ -17,8 +17,15 @@
     "web:dev": "npm run dev -w apps/web",
     "web:build": "npm run build -w apps/web",
     "web:typecheck": "npm run typecheck -w apps/web",
+    "extra:desktop:start": "electron apps/desktop/main.cjs",
+    "extra:desktop:shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-desktop-shortcut.ps1",
+    "desktop:start": "npm run extra:desktop:start",
+    "desktop:shortcut": "npm run extra:desktop:shortcut",
     "typecheck": "npm run api:typecheck && npm run web:typecheck",
     "build": "npm run api:build && npm run web:build",
     "test": "npm run api:test"
+  },
+  "devDependencies": {
+    "electron": "^42.2.0"
   }
 }

@@ -102,6 +102,34 @@ npm run web:dev
 http://127.0.0.1:5173
 ```
 
+## Extra: modo aplicativo desktop
+
+Esta versao desktop e um extra opcional do JobOps, mantido no clone `jobops-desktop`. Ela nao substitui a versao web principal: apenas empacota o mesmo produto em uma janela propria no Windows usando Electron.
+
+Ao abrir o app, ele sobe a API e a interface web por baixo, tenta abrir o Docker Desktop se ele estiver fechado e usa o PostgreSQL do `infra/docker-compose.yml`.
+
+Criar atalho na Area de Trabalho:
+
+```bash
+npm run extra:desktop:shortcut
+```
+
+Abrir pelo terminal:
+
+```bash
+npm run extra:desktop:start
+```
+
+Depois de criar o atalho, basta abrir `JobOps` pela Area de Trabalho. O app fica rodando ate a janela ser fechada.
+
+Os atalhos antigos `npm run desktop:start` e `npm run desktop:shortcut` continuam funcionando como alias.
+
+Observacoes:
+
+- o Docker Desktop precisa estar instalado;
+- o primeiro boot pode demorar mais porque o banco, migrations e seed sao preparados;
+- logs ficam em `jobops-desktop.log` na raiz do projeto.
+
 ## MVP atual
 
 - API Express com TypeScript.
