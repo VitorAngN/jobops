@@ -65,6 +65,7 @@ Painel de detalhes da candidatura com historico de interacoes e lembretes de fol
 
 ## Documentacao tecnica
 
+- [Indice da documentacao](docs/INDEX.md)
 - [Visao geral](docs/00-visao-geral.md)
 - [Modelagem de dados](docs/01-modelagem-dados.md)
 - [Roadmap](docs/02-roadmap.md)
@@ -73,6 +74,10 @@ Painel de detalhes da candidatura com historico de interacoes e lembretes de fol
 - [DevOps](docs/05-devops.md)
 - [Arquitetura backend](docs/06-backend-architecture.md)
 - [Evidencias tecnicas](docs/07-evidencias-tecnicas.md)
+- [Extra desktop](docs/08-desktop-extra.md)
+- [Decisoes arquiteturais](docs/09-decisoes-arquiteturais.md)
+- [Backlog priorizado](docs/10-backlog-priorizado.md)
+- [Memoria de projeto](docs/11-memoria-de-projeto.md)
 
 ## Primeiros comandos
 
