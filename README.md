@@ -1,6 +1,6 @@
 # JobOps
 
-Gerenciador inteligente de candidaturas para acompanhar vagas, curriculos, contatos, retornos e metricas de busca de emprego.
+Gerenciador de candidaturas para acompanhar vagas, curriculos, contatos, retornos e metricas de busca de emprego.
 
 ## Objetivo
 
@@ -18,17 +18,15 @@ Em vez de uma planilha solta, o sistema centraliza:
 
 ## Posicionamento tecnico
 
-Projeto autoral focado em Back-end, Cloud e DevOps:
+Projeto autoral focado em organizar uma dor real com uma stack de back-end e front-end moderna:
 
 - API REST com Node.js, TypeScript e Express;
 - PostgreSQL com Prisma;
 - Frontend em React e TypeScript;
 - Docker e Docker Compose para ambiente local;
-- GitHub Actions para CI;
-- deploy futuro em AWS EC2;
-- modulo futuro de IA para analisar descricoes de vaga e sugerir curriculo/mensagem.
+- GitHub Actions para CI.
 
-## Modulos previstos
+## Modulos do MVP
 
 1. Dashboard de metricas
 2. Cadastro e pipeline de vagas
@@ -36,7 +34,6 @@ Projeto autoral focado em Back-end, Cloud e DevOps:
 4. Versoes de curriculo
 5. Historico de interacoes
 6. Lembretes de follow-up
-7. Analise de fit com IA
 
 ## Estrutura inicial
 
@@ -46,7 +43,7 @@ jobops/
     api/        # Backend Node.js/TypeScript
     web/        # Frontend React/TypeScript
   docs/         # Arquitetura, modelagem e planejamento
-  infra/        # Docker, CI/CD e deploy
+  infra/        # Docker e CI
 ```
 
 ## Status

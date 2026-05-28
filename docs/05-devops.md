@@ -34,15 +34,15 @@ test
 build
 ```
 
-## Deploy futuro
+## Deploy
 
-Primeira versao de deploy:
+Ainda nao ha deploy publicado. Uma etapa futura pode validar a aplicacao em:
 
 - AWS EC2 Ubuntu;
 - Docker Compose;
 - Nginx como reverse proxy;
 - variaveis de ambiente via `.env`;
-- PostgreSQL em container ou servico gerenciado futuro.
+- PostgreSQL em container ou servico gerenciado.
 
 ## Observabilidade futura
 

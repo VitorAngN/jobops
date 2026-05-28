@@ -50,14 +50,4 @@
 - Dockerfile para Web.
 - Docker Compose completo.
 - GitHub Actions para lint/build/test.
-- Deploy em AWS EC2.
-
-## Fase 6 - IA
-
-- Colar descricao da vaga.
-- Extrair tecnologias.
-- Calcular fit score.
-- Sugerir curriculo.
-- Gerar mensagem para recrutador.
-- Sugerir lacunas de estudo.
-
+- Preparar documentacao de deploy para uma etapa futura.

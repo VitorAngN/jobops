@@ -39,11 +39,9 @@ Primeira versao:
 
 O diferencial nao e apenas cadastrar vagas. O diferencial e transformar a busca em um processo mensuravel.
 
-Versoes futuras podem incluir IA para:
+O foco do MVP e:
 
-- extrair tecnologias da descricao da vaga;
-- calcular fit com o perfil;
-- sugerir qual curriculo usar;
-- gerar mensagem para recrutador;
-- destacar lacunas de estudo.
-
+- registrar candidaturas de forma consistente;
+- acompanhar status e follow-ups;
+- medir retorno por curriculo, area e plataforma;
+- exportar dados para analise externa quando necessario.
