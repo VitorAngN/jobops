@@ -1,0 +1,91 @@
+/* Início */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.stat { padding: 16px 18px; }
+.stat span { color: var(--text-3); font-size: 13px; font-weight: 500; }
+.stat strong { display: block; font-size: 26px; font-weight: 650; letter-spacing: -0.02em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.stat small { color: var(--text-3); }
+.home-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 960px) { .stats { grid-template-columns: repeat(2, 1fr); } .home-grid { grid-template-columns: 1fr; } }
+
+.list-row { display: flex; align-items: center; gap: 12px; padding: 11px 18px; border-bottom: 1px solid var(--border); }
+.list-row:last-child { border-bottom: 0; }
+.list-row.clickable { cursor: pointer; }
+.list-row.clickable:hover { background: var(--bg-soft); }
+.row-main { flex: 1; min-width: 0; }
+.row-title { font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-sub { color: var(--text-3); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.late { color: var(--red-fg); font-weight: 600; }
+
+.funnel { display: grid; gap: 10px; padding: 18px; }
+.funnel-row { display: grid; grid-template-columns: 110px 1fr 32px; align-items: center; gap: 10px; font-size: 13px; }
+.funnel-bar { height: 8px; border-radius: 99px; background: var(--bg-hover); overflow: hidden; }
+.funnel-bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.funnel-row b { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Encontradas (triagem) */
+.job { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+.job:last-child { border-bottom: 0; }
+.job-title { font-weight: 600; font-size: 15px; }
+.job-title a { color: var(--text); }
+.job-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; color: var(--text-3); font-size: 13px; margin-top: 2px; }
+.job-reasons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.job-desc { margin-top: 10px; color: var(--text-2); font-size: 13px; white-space: pre-line; max-height: 260px; overflow: auto; padding: 10px 12px; background: var(--bg-soft); border-radius: var(--radius-sm); }
+.job-actions { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.job-actions .btn { justify-content: flex-start; }
+@media (max-width: 640px) { .job { grid-template-columns: 1fr; } .job-actions { flex-direction: row; } }
+.run-info { display: flex; align-items: center; gap: 8px; color: var(--text-3); font-size: 13px; }
+
+/* Pipeline */
+.board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
+.column { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; min-height: 200px; transition: background .1s; }
+.column.over { background: var(--accent-soft); border-color: var(--accent); }
+.column-head { display: flex; align-items: center; gap: 8px; padding: 4px 6px 10px; font-weight: 600; }
+.column-head .n { color: var(--text-3); font-weight: 500; }
+.column-body { display: grid; gap: 8px; }
+.ticket { background: var(--panel); border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px; box-shadow: var(--shadow); cursor: grab; }
+.ticket:hover { border-color: var(--border-strong); }
+.ticket.dragging { opacity: .45; }
+.ticket-top { display: flex; gap: 10px; align-items: flex-start; }
+.ticket .row-title { white-space: normal; }
+.ticket-foot { display: flex; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+
+/* Candidaturas (tabela) */
+.table-wrap { overflow-x: auto; }
+table.table { width: 100%; border-collapse: collapse; }
+.table th { text-align: left; font-size: 12px; font-weight: 600; color: var(--text-3); padding: 10px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.table tr:last-child td { border-bottom: 0; }
+.table tbody tr { cursor: pointer; }
+.table tbody tr:hover { background: var(--bg-soft); }
+.pager { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-top: 1px solid var(--border); color: var(--text-3); font-size: 13px; }
+
+/* Detalhe da candidatura */
+.detail-head { padding: 20px 22px 16px; border-bottom: 1px solid var(--border); display: grid; gap: 12px; }
+.detail-head h2 { font-size: 18px; font-weight: 650; }
+.detail-body { padding: 18px 22px; display: grid; gap: 22px; }
+.detail-body h3 { font-size: 13px; font-weight: 650; color: var(--text-2); margin-bottom: 8px; }
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; font-size: 13px; }
+.facts dt { color: var(--text-3); }
+.facts dd { margin: 0; font-weight: 500; }
+.timeline { display: grid; gap: 10px; }
+.timeline-item { border-left: 2px solid var(--border); padding: 0 0 0 12px; }
+.timeline-item small { color: var(--text-3); }
+.inline-form { display: flex; gap: 8px; }
+.inline-form .input { flex: 1; }
+
+/* Configurações de busca */
+.profile { margin-bottom: 16px; }
+.profile-grid { display: grid; gap: 16px; padding: 18px; }
+.sources { display: flex; flex-wrap: wrap; gap: 8px; }
+.source-chip { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 99px; cursor: pointer; font-weight: 500; }
+.source-chip:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-text); }
+.source-chip input { display: none; }
+.company-row { display: grid; grid-template-columns: 140px 1fr 1fr auto; gap: 8px; align-items: center; }
+@media (max-width: 640px) { .company-row { grid-template-columns: 1fr 1fr; } }
+.range { display: flex; align-items: center; gap: 12px; }
+.range input { flex: 1; accent-color: var(--accent); }
+
+/* Login */
+.login { min-height: 100%; display: grid; place-items: center; padding: 24px; background: var(--bg-soft); }
+.login .card { width: min(380px, 100%); padding: 28px; display: grid; gap: 16px; }
+.login h1 { font-size: 20px; font-weight: 650; }

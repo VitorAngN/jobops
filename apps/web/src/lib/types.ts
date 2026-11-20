@@ -209,3 +209,65 @@ export type ResumeVersionPayload = {
   fileUrl?: string;
   notes?: string;
 };
+
+// ---------- Busca automática ----------
+
+export type DiscoverySource = "GUPY" | "GREENHOUSE" | "LEVER" | "ASHBY" | "REMOTIVE";
+export type DiscoveredStatus = "NEW" | "APPROVED" | "DISCARDED";
+
+export type DiscoveredJob = {
+  id: string;
+  source: DiscoverySource;
+  title: string;
+  company: string;
+  location: string | null;
+  workMode: WorkMode;
+  level: ApplicationLevel;
+  url: string;
+  description: string | null;
+  publishedAt: string | null;
+  score: number;
+  scoreReasons: string[];
+  status: DiscoveredStatus;
+  applicationId: string | null;
+  createdAt: string;
+};
+
+export type WatchedCompany = { source: "GREENHOUSE" | "LEVER" | "ASHBY"; slug: string; name: string };
+
+export type SearchProfile = {
+  id: string;
+  name: string;
+  active: boolean;
+  terms: string[];
+  keywords: string[];
+  excludeWords: string[];
+  locations: string[];
+  acceptRemote: boolean;
+  sources: DiscoverySource[];
+  minScore: number;
+  companies: WatchedCompany[];
+};
+
+export type SearchProfilePayload = Omit<SearchProfile, "id">;
+
+export type DiscoveryRun = {
+  id: string;
+  trigger: string;
+  startedAt: string;
+  finishedAt: string | null;
+  found: number;
+  created: number;
+  errors: string[];
+};
+
+export type ImportedJob = {
+  source: DiscoverySource | null;
+  title: string;
+  company: string;
+  location: string | null;
+  workMode: WorkMode;
+  level: ApplicationLevel;
+  url: string;
+  description: string | null;
+};

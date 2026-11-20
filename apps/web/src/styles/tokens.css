@@ -1,0 +1,59 @@
+/* Cores e medidas. Referência: Linear e Huntr (fundo claro, barra lateral cinza, bordas finas). */
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f7f7f8;
+  --bg-hover: #f0f0f2;
+  --panel: #ffffff;
+  --border: #e6e6ea;
+  --border-strong: #d4d4da;
+  --text: #18181b;
+  --text-2: #52525b;
+  --text-3: #8b8b94;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: #eff4ff;
+  --accent-text: #1e40af;
+
+  --blue-bg: #eff4ff;   --blue-fg: #1e40af;
+  --violet-bg: #f3efff; --violet-fg: #5b21b6;
+  --green-bg: #ecfdf3;  --green-fg: #047857;
+  --red-bg: #fef2f2;    --red-fg: #b91c1c;
+  --amber-bg: #fffbeb;  --amber-fg: #a16207;
+  --neutral-bg: #f4f4f5; --neutral-fg: #52525b;
+
+  --radius: 10px;
+  --radius-sm: 7px;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-lg: 0 12px 32px rgb(16 24 40 / 0.14), 0 2px 6px rgb(16 24 40 / 0.06);
+  --sidebar: 232px;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111113;
+    --bg-soft: #18181b;
+    --bg-hover: #222226;
+    --panel: #18181b;
+    --border: #2a2a2f;
+    --border-strong: #3a3a40;
+    --text: #ededef;
+    --text-2: #b4b4bb;
+    --text-3: #7c7c85;
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+    --accent-soft: #172036;
+    --accent-text: #93c5fd;
+
+    --blue-bg: #172036;   --blue-fg: #93c5fd;
+    --violet-bg: #231a3a; --violet-fg: #c4b5fd;
+    --green-bg: #10261c;  --green-fg: #6ee7b7;
+    --red-bg: #2c1515;    --red-fg: #fca5a5;
+    --amber-bg: #2a2110;  --amber-fg: #fcd34d;
+    --neutral-bg: #232327; --neutral-fg: #b4b4bb;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 16px 40px rgb(0 0 0 / 0.5);
+    color-scheme: dark;
+  }
+}

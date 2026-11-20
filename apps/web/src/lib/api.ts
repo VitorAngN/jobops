@@ -15,25 +15,61 @@ import type {
   ResumeVersionPayload,
   StatusMetric,
   UpdateApplicationPayload,
+  DiscoveredJob,
+  DiscoveredStatus,
+  DiscoveryRun,
+  DiscoverySource,
+  ImportedJob,
+  SearchProfile,
+  SearchProfilePayload,
 } from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3333/api";
+const TOKEN_KEY = "jobops.sessao";
+
+export const session = {
+  get: () => {
+    try {
+      return localStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
+  },
+  set: (token: string | null) => {
+    try {
+      if (token) localStorage.setItem(TOKEN_KEY, token);
+      else localStorage.removeItem(TOKEN_KEY);
+    } catch {
+      /* navegador sem armazenamento: a sessão dura até fechar a aba */
+    }
+  },
+};
+
+/** Avisado quando a API responde 401 (sessão vencida), para voltar ao login. */
+export const onUnauthorized = { handler: () => {} };
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   let response: Response;
 
   try {
+    const token = session.get();
     response = await fetch(`${API_URL}${path}`, {
+      ...options,
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options?.headers,
       },
-      ...options,
     });
   } catch {
     throw new Error(
-      `API indisponivel. Confira se o backend esta rodando em ${API_URL} e se o banco PostgreSQL foi iniciado.`,
+      `Não foi possível falar com a API em ${API_URL}. Ela pode estar iniciando (o plano gratuito dorme); tente de novo em alguns segundos.`,
     );
+  }
+
+  if (response.status === 401 && !path.startsWith("/auth/")) {
+    session.set(null);
+    onUnauthorized.handler();
   }
 
   if (!response.ok) {
@@ -190,3 +226,50 @@ export function deleteResumeVersion(id: string): Promise<void> {
     method: "DELETE",
   });
 }
+
+// ---------- Login ----------
+
+export function getAuthStatus(): Promise<{ authRequired: boolean }> {
+  return request("/auth/status");
+}
+
+export async function login(password: string): Promise<void> {
+  const { token } = await request<{ token: string }>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ password }),
+  });
+  session.set(token);
+}
+
+// ---------- Busca automática ----------
+
+export function listDiscovered(status: DiscoveredStatus, filters: { source?: DiscoverySource | ""; q?: string } = {}) {
+  const params = new URLSearchParams({ status });
+  if (filters.source) params.set("source", filters.source);
+  if (filters.q) params.set("q", filters.q);
+  return request<{ jobs: DiscoveredJob[]; counts: Partial<Record<DiscoveredStatus, number>> }>(`/discovery/jobs?${params}`);
+}
+
+export const approveDiscovered = (id: string) => request<JobApplication>(`/discovery/jobs/${id}/approve`, { method: "POST" });
+export const discardDiscovered = (id: string) => request<DiscoveredJob>(`/discovery/jobs/${id}/discard`, { method: "POST" });
+export const restoreDiscovered = (id: string) => request<DiscoveredJob>(`/discovery/jobs/${id}/restore`, { method: "POST" });
+
+export const runDiscovery = (profileId?: string) =>
+  request<{ found: number; created: number; errors: string[] }>("/discovery/run", {
+    method: "POST",
+    body: JSON.stringify(profileId ? { profileId } : {}),
+  });
+
+export const listRuns = () => request<DiscoveryRun[]>("/discovery/runs");
+export const listProfiles = () => request<SearchProfile[]>("/discovery/profiles");
+
+export const saveProfile = (payload: SearchProfilePayload, id?: string) =>
+  request<SearchProfile>(id ? `/discovery/profiles/${id}` : "/discovery/profiles", {
+    method: id ? "PUT" : "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const deleteProfile = (id: string) => request<void>(`/discovery/profiles/${id}`, { method: "DELETE" });
+
+export const importJobUrl = (url: string) =>
+  request<ImportedJob>("/discovery/import", { method: "POST", body: JSON.stringify({ url }) });
