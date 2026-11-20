@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, Home, Inbox, KanbanSquare, LogOut, Plus, SlidersHorizontal } from "lucide-react";
+import { BriefcaseBusiness, FileText, Home, Inbox, KanbanSquare, LogOut, Plus, SlidersHorizontal } from "lucide-react";
 
 import type { Route } from "../lib/router";
 
@@ -7,6 +7,7 @@ const items: { id: Route; label: string; icon: typeof Home }[] = [
   { id: "encontradas", label: "Encontradas", icon: Inbox },
   { id: "pipeline", label: "Pipeline", icon: KanbanSquare },
   { id: "candidaturas", label: "Candidaturas", icon: BriefcaseBusiness },
+  { id: "curriculos", label: "Currículos", icon: FileText },
   { id: "busca", label: "Busca automática", icon: SlidersHorizontal },
 ];
 

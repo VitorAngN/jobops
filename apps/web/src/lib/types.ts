@@ -20,6 +20,7 @@ export type ApplicationArea =
   | "FRONTEND"
   | "DATA"
   | "SECURITY"
+  | "SUPPORT"
   | "OTHER";
 
 export type ApplicationLevel = "INTERNSHIP" | "TRAINEE" | "JUNIOR" | "MID" | "SENIOR" | "UNKNOWN";
@@ -49,13 +50,16 @@ export type Company = {
   };
 };
 
+export type ResumeFocus = "BACKEND" | "DEVOPS" | "CLOUD" | "FULLSTACK" | "SUPPORT" | "GENERAL";
+
 export type ResumeVersion = {
   id: string;
   name: string;
   language: "PT_BR" | "EN" | "ES";
-  focus: "BACKEND" | "DEVOPS" | "CLOUD" | "FULLSTACK" | "GENERAL";
+  focus: ResumeFocus;
   fileUrl?: string | null;
   notes?: string | null;
+  content?: string | null;
   _count?: {
     applications: number;
   };
@@ -161,7 +165,8 @@ export type CreateApplicationPayload = {
   contractType: ContractType;
   sourcePlatform: SourcePlatform;
   jobUrl?: string;
-  resumeVersionId?: string;
+  description?: string;
+  resumeVersionId?: string | null;
   status: ApplicationStatus;
   fitScore?: number;
   appliedAt?: string;
@@ -208,7 +213,10 @@ export type ResumeVersionPayload = {
   focus: ResumeVersion["focus"];
   fileUrl?: string;
   notes?: string;
+  content?: string;
 };
+
+export type ResumeMatch = { id: string; name: string; coverage: number; matched: string[]; missing: string[] };
 
 // ---------- Busca automática ----------
 
@@ -231,6 +239,7 @@ export type DiscoveredJob = {
   status: DiscoveredStatus;
   applicationId: string | null;
   createdAt: string;
+  bestResume: ResumeMatch | null;
 };
 
 export type WatchedCompany = { source: "GREENHOUSE" | "LEVER" | "ASHBY"; slug: string; name: string };
@@ -239,6 +248,7 @@ export type SearchProfile = {
   id: string;
   name: string;
   active: boolean;
+  area: ApplicationArea;
   terms: string[];
   keywords: string[];
   excludeWords: string[];

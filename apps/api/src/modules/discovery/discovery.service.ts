@@ -1,5 +1,6 @@
 import type { DiscoverySource, PrismaClient, SourcePlatform } from "@prisma/client";
 
+import { rankResumes } from "../resumes/match.js";
 import { scoreJob } from "./score.js";
 import { SOURCES, type ExternalJob } from "./sources/index.js";
 
@@ -63,11 +64,17 @@ export async function runDiscovery(
   return { runId: run.id, found, created, errors };
 }
 
-/** Aprovar = virar candidatura com status "Salva" (cria a empresa se ainda não existir). */
+/**
+ * Aprovar = virar candidatura com status "Salva" (cria a empresa se ainda não existir).
+ * A área vem da busca que achou a vaga, e o currículo sugerido é o mais aderente.
+ */
 export async function approveJob(db: PrismaClient, id: string) {
   return db.$transaction(async (tx) => {
-    const job = await tx.discoveredJob.findUniqueOrThrow({ where: { id } });
+    const job = await tx.discoveredJob.findUniqueOrThrow({ where: { id }, include: { profile: { select: { area: true } } } });
     if (job.applicationId) return tx.jobApplication.findUniqueOrThrow({ where: { id: job.applicationId } });
+
+    const resumes = await tx.resumeVersion.findMany({ select: { id: true, name: true, content: true } });
+    const best = rankResumes(`${job.title}\n${job.description ?? ""}`, resumes)[0];
 
     const company = await tx.company.upsert({
       where: { name: job.company },
@@ -78,6 +85,8 @@ export async function approveJob(db: PrismaClient, id: string) {
       data: {
         companyId: company.id,
         title: job.title,
+        area: job.profile?.area ?? "BACKEND",
+        resumeVersionId: best?.id,
         level: job.level,
         workMode: job.workMode,
         location: job.location,

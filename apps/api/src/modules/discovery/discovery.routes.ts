@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma.js";
 import { requireCronToken } from "../../middleware/auth.js";
 import { approveJob, runDiscovery } from "./discovery.service.js";
 import { importFromUrl } from "./import-url.js";
+import { rankResumes } from "../resumes/match.js";
 
 const SOURCES = ["GUPY", "GREENHOUSE", "LEVER", "ASHBY", "REMOTIVE"] as const;
 const words = z.array(z.string().trim().min(1)).default([]);
@@ -12,6 +13,7 @@ const words = z.array(z.string().trim().min(1)).default([]);
 const profileSchema = z.object({
   name: z.string().trim().min(1),
   active: z.boolean().default(true),
+  area: z.enum(["BACKEND", "DEVOPS", "CLOUD", "FULLSTACK", "FRONTEND", "DATA", "SECURITY", "SUPPORT", "OTHER"]).default("BACKEND"),
   terms: words,
   keywords: words,
   excludeWords: words,
@@ -93,7 +95,12 @@ discoveryRoutes.get("/jobs", async (req, res, next) => {
       take: 200,
     });
     const counts = await prisma.discoveredJob.groupBy({ by: ["status"], _count: true });
-    res.json({ jobs, counts: Object.fromEntries(counts.map((c) => [c.status, c._count])) });
+    const resumes = await prisma.resumeVersion.findMany({ select: { id: true, name: true, content: true } });
+    const withResume = jobs.map((job) => ({
+      ...job,
+      bestResume: rankResumes(`${job.title}\n${job.description ?? ""}`, resumes)[0] ?? null,
+    }));
+    res.json({ jobs: withResume, counts: Object.fromEntries(counts.map((c) => [c.status, c._count])) });
   } catch (e) {
     next(e);
   }

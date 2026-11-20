@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const areaSchema = z.enum(["BACKEND", "DEVOPS", "CLOUD", "FULLSTACK", "FRONTEND", "DATA", "SECURITY", "OTHER"]);
+export const areaSchema = z.enum(["BACKEND", "DEVOPS", "CLOUD", "FULLSTACK", "FRONTEND", "DATA", "SECURITY", "SUPPORT", "OTHER"]);
 export const levelSchema = z.enum(["INTERNSHIP", "TRAINEE", "JUNIOR", "MID", "SENIOR", "UNKNOWN"]);
 export const workModeSchema = z.enum(["REMOTE", "HYBRID", "ONSITE", "UNKNOWN"]);
 export const contractTypeSchema = z.enum(["INTERNSHIP", "CLT", "PJ", "TEMPORARY", "OTHER", "UNKNOWN"]);

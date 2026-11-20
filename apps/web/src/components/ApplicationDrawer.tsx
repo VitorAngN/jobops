@@ -1,12 +1,13 @@
 import { ExternalLink, Pencil, Trash2, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
-import { createInteraction, createReminder, deleteApplication, getApplication, updateApplication, updateReminder } from "../lib/api";
+import { createInteraction, createReminder, deleteApplication, getApplication, listResumeVersions, updateApplication, updateReminder } from "../lib/api";
 import { dueLabel, shortDate } from "../lib/format";
 import { areaLabels, contractLabels, interactionLabels, levelLabels, platformLabels, statusLabels, workModeLabels } from "../lib/labels";
 import type { ApplicationStatus, InteractionType } from "../lib/types";
 import { useLoad } from "../lib/useLoad";
 import { ApplicationForm } from "./ApplicationForm";
+import { MatchPanel } from "./MatchPanel";
 import { useToast } from "./Toast";
 import { CompanyAvatar, Drawer, Score, Skeletons } from "./ui";
 
@@ -19,6 +20,7 @@ export function ApplicationDrawer({ id, onClose, onChanged }: Props) {
   const [noteType, setNoteType] = useState<InteractionType>("NOTE");
   const [reminder, setReminder] = useState({ title: "", dueAt: "" });
   const toast = useToast();
+  const resumes = useLoad(listResumeVersions, []);
 
   const refresh = async () => {
     await reload();
@@ -88,6 +90,16 @@ export function ApplicationDrawer({ id, onClose, onChanged }: Props) {
               <div><dt>Onde achou</dt><dd>{platformLabels[app.sourcePlatform]}</dd></div>
               <div><dt>Aplicou em</dt><dd>{shortDate(app.appliedAt)}</dd></div>
             </dl>
+
+            <section>
+              <h3>Currículo</h3>
+              <select className="select" style={{ marginBottom: 10 }} value={app.resumeVersion?.id ?? ""} aria-label="Currículo usado"
+                onChange={async (e) => { if (e.target.value) { await updateApplication(id, { resumeVersionId: e.target.value }); await refresh(); } }}>
+                <option value="" disabled>Escolha qual currículo usou</option>
+                {resumes.data?.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+              </select>
+              <MatchPanel text={`${app.title}\n${app.description ?? ""}`} chosenId={app.resumeVersion?.id} />
+            </section>
 
             {app.notes && <section><h3>Anotações</h3><p style={{ whiteSpace: "pre-line" }}>{app.notes}</p></section>}
 

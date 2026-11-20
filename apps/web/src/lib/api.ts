@@ -22,6 +22,7 @@ import type {
   ImportedJob,
   SearchProfile,
   SearchProfilePayload,
+  ResumeMatch,
 } from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "/api";
@@ -273,3 +274,6 @@ export const deleteProfile = (id: string) => request<void>(`/discovery/profiles/
 
 export const importJobUrl = (url: string) =>
   request<ImportedJob>("/discovery/import", { method: "POST", body: JSON.stringify({ url }) });
+
+export const matchResumes = (text: string) =>
+  request<ResumeMatch[]>("/resume-versions/match", { method: "POST", body: JSON.stringify({ text }) });

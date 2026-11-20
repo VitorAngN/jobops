@@ -6,31 +6,51 @@ import { useToast } from "../components/Toast";
 import { Empty, PageHead, Skeletons } from "../components/ui";
 import { deleteProfile, listProfiles, listRuns, runDiscovery, saveProfile } from "../lib/api";
 import { relativeDate } from "../lib/format";
-import { discoverySourceLabels } from "../lib/labels";
-import type { DiscoverySource, SearchProfile, SearchProfilePayload, WatchedCompany } from "../lib/types";
+import { areaLabels, discoverySourceLabels } from "../lib/labels";
+import type { ApplicationArea, DiscoverySource, SearchProfile, SearchProfilePayload, WatchedCompany } from "../lib/types";
 import { useLoad } from "../lib/useLoad";
 
-/** Ponto de partida para quem procura estágio em back-end. Tudo editável. */
-const starter: SearchProfilePayload = {
-  name: "Estágio back-end",
-  active: true,
-  terms: ["estágio back-end", "estágio desenvolvimento", "estágio software", "estágio programação"],
-  keywords: ["back-end", "backend", "api", "node", "typescript", "java", "c#", ".net", "python", "sql", "postgres", "docker"],
-  excludeWords: ["sênior", "senior", "pleno", "vendas", "comercial", "marketing"],
-  locations: ["Remoto", "Paraná"],
-  acceptRemote: true,
-  sources: ["GUPY", "REMOTIVE"],
-  minScore: 40,
-  companies: [],
-};
+const base = { active: true, acceptRemote: true, minScore: 40, companies: [], locations: ["Paraná"] };
+const junior = ["sênior", "senior", "pleno", "especialista", "coordenador", "gerente", "vendas", "comercial"];
+
+/** Modelos prontos por área. Tudo editável depois. */
+const templates: SearchProfilePayload[] = [
+  {
+    ...base, name: "Estágio DevOps / Cloud", area: "DEVOPS", sources: ["GUPY", "REMOTIVE"],
+    terms: ["estágio devops", "estágio cloud", "estágio infraestrutura", "estágio sre"],
+    keywords: ["devops", "cloud", "docker", "kubernetes", "ci/cd", "linux", "aws", "azure", "terraform", "git", "pipeline"],
+    excludeWords: junior,
+  },
+  {
+    ...base, name: "Estágio back-end", area: "BACKEND", sources: ["GUPY", "REMOTIVE"],
+    terms: ["estágio back-end", "estágio desenvolvimento", "estágio software", "estágio programação"],
+    keywords: ["back-end", "backend", "api", "node", "typescript", "java", "c#", ".net", "python", "sql", "postgres", "docker"],
+    excludeWords: junior,
+  },
+  {
+    ...base, name: "Estágio full-stack", area: "FULLSTACK", sources: ["GUPY", "REMOTIVE"],
+    terms: ["estágio full stack", "estágio desenvolvedor web", "estágio fullstack"],
+    keywords: ["full stack", "fullstack", "react", "node", "typescript", "javascript", "api", "sql"],
+    excludeWords: junior,
+  },
+  {
+    ...base, name: "Estágio suporte / infra de TI", area: "SUPPORT", sources: ["GUPY"],
+    terms: ["estágio suporte ti", "estágio infraestrutura ti", "estágio redes", "estágio help desk"],
+    keywords: ["suporte", "redes", "linux", "windows", "help desk", "hardware", "infraestrutura", "active directory"],
+    excludeWords: junior,
+  },
+];
 
 export function SearchSettings({ onChanged }: { onChanged: () => void }) {
   const { data, error, reload } = useLoad(listProfiles, []);
   const runs = useLoad(listRuns, []);
   const toast = useToast();
 
-  async function create() {
-    await saveProfile(data?.length ? { ...starter, name: "Nova busca" } : starter);
+  const used = new Set(data?.map((p) => p.name));
+  const available = templates.filter((t) => !used.has(t.name));
+
+  async function create(t: SearchProfilePayload) {
+    await saveProfile(t);
     await reload();
   }
 
@@ -39,13 +59,23 @@ export function SearchSettings({ onChanged }: { onChanged: () => void }) {
       <PageHead
         title="Busca automática"
         subtitle="A busca roda sozinha uma vez por dia. As vagas que passam da nota mínima vão para Encontradas."
-        actions={<button className="btn" onClick={create}><Plus /> Nova busca</button>}
+        actions={available.length > 0 && data && data.length > 0 ? (
+          <select className="select" value="" onChange={(e) => { const t = available.find((x) => x.name === e.target.value); if (t) void create(t); }} aria-label="Adicionar busca">
+            <option value="">+ Adicionar busca…</option>
+            {available.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
+          </select>
+        ) : undefined}
       />
       {error && <div className="alert">{error}</div>}
       {!data ? <Skeletons n={2} /> : data.length === 0 ? (
         <section className="card">
-          <Empty title="Nenhuma busca configurada" action={<button className="btn primary" onClick={create}>Criar busca de estágio back-end</button>}>
-            Comece com um modelo pronto e ajuste as palavras do seu jeito.
+          <Empty title="Nenhuma busca configurada" action={
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginTop: 14 }}>
+              <button className="btn primary" onClick={async () => { for (const t of templates) await saveProfile(t); await reload(); }}>Criar as 4 buscas</button>
+              {templates.map((t) => <button key={t.name} className="btn" onClick={() => create(t)}>{t.name}</button>)}
+            </div>
+          }>
+            Comece com modelos prontos e ajuste as palavras do seu jeito.
           </Empty>
         </section>
       ) : (
@@ -123,6 +153,9 @@ function ProfileCard({ profile, onSaved, onDeleted, onRan }: CardProps) {
       <div className="card-head">
         <input className="input" style={{ maxWidth: 320, fontWeight: 600 }} value={form.name} onChange={(e) => set("name", e.target.value)} aria-label="Nome da busca" />
         <div className="page-actions" style={{ alignItems: "center" }}>
+          <select className="select sm-select" value={form.area} onChange={(e) => set("area", e.target.value as ApplicationArea)} aria-label="Área">
+            {(Object.keys(areaLabels) as ApplicationArea[]).map((a) => <option key={a} value={a}>{areaLabels[a]}</option>)}
+          </select>
           <label className="check"><input type="checkbox" checked={form.active} onChange={(e) => set("active", e.target.checked)} /> Ativa</label>
           <button className="btn sm" onClick={run} disabled={busy !== null || dirty} title={dirty ? "Salve antes de buscar" : undefined}>
             {busy === "run" ? <Loader2 className="spin" /> : <Play />} Buscar agora

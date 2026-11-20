@@ -1,4 +1,5 @@
 import type {
+  ResumeFocus,
   ApplicationArea,
   ApplicationLevel,
   ApplicationStatus,
@@ -32,6 +33,7 @@ export const areaLabels: Record<ApplicationArea, string> = {
   FRONTEND: "Front-end",
   DATA: "Dados",
   SECURITY: "Segurança",
+  SUPPORT: "Suporte / Infra",
   OTHER: "Outra",
 };
 
@@ -107,3 +109,12 @@ export function statusTone(status: ApplicationStatus): "neutral" | "blue" | "vio
   if (status === "TEST_SENT" || status === "HR_INTERVIEW" || status === "TECH_INTERVIEW") return "violet";
   return "blue";
 }
+
+export const focusLabels: Record<ResumeFocus, string> = {
+  BACKEND: "Back-end",
+  DEVOPS: "DevOps",
+  CLOUD: "Cloud",
+  FULLSTACK: "Full-stack",
+  SUPPORT: "Suporte / Infra",
+  GENERAL: "Geral",
+};

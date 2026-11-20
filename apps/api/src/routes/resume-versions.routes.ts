@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 
 import { prisma } from "../lib/prisma.js";
+import { rankResumes } from "../modules/resumes/match.js";
 import { NotFoundError } from "../shared/http-errors.js";
 
 export const resumeVersionsRoutes = Router();
@@ -9,9 +10,21 @@ export const resumeVersionsRoutes = Router();
 const resumeVersionBodySchema = z.object({
   name: z.string().min(1),
   language: z.enum(["PT_BR", "EN", "ES"]).default("PT_BR"),
-  focus: z.enum(["BACKEND", "DEVOPS", "CLOUD", "FULLSTACK", "GENERAL"]).default("GENERAL"),
+  focus: z.enum(["BACKEND", "DEVOPS", "CLOUD", "FULLSTACK", "SUPPORT", "GENERAL"]).default("GENERAL"),
   fileUrl: z.string().url().optional(),
   notes: z.string().optional(),
+  content: z.string().max(30000).optional(),
+});
+
+/** Compara o texto de uma vaga com todos os currículos e devolve do melhor para o pior. */
+resumeVersionsRoutes.post("/match", async (request, response, next) => {
+  try {
+    const { text } = z.object({ text: z.string().min(1).max(60000) }).parse(request.body);
+    const resumes = await prisma.resumeVersion.findMany({ select: { id: true, name: true, content: true } });
+    return response.json(rankResumes(text, resumes));
+  } catch (error) {
+    return next(error);
+  }
 });
 
 resumeVersionsRoutes.get("/", async (_request, response, next) => {

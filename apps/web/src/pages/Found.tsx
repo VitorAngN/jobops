@@ -146,6 +146,12 @@ function JobRow({ job, onApprove, onDiscard, onRestore, onOpen }: RowProps) {
           <Score value={job.score} />
           {job.scoreReasons.map((r) => <span key={r} className="badge outline">{r}</span>)}
         </div>
+        {job.bestResume && (
+          <div className="match-tags" style={{ marginTop: 8 }}>
+            <span className="badge green">Currículo: {job.bestResume.name} · {job.bestResume.coverage}%</span>
+            {job.bestResume.missing.length > 0 && <span className="muted">falta: {job.bestResume.missing.slice(0, 5).join(", ")}</span>}
+          </div>
+        )}
         {job.description && (
           <>
             <button className="btn ghost sm" style={{ marginTop: 8, marginLeft: -8 }} onClick={() => setOpen(!open)}>

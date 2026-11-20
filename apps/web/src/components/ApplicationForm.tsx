@@ -42,6 +42,7 @@ export function ApplicationForm({ application, onClose, onSaved }: Props) {
           contractType: application.contractType,
           sourcePlatform: application.sourcePlatform,
           jobUrl: application.jobUrl ?? "",
+          description: application.description ?? "",
           status: application.status,
           appliedAt: toInputDate(application.appliedAt),
           notes: application.notes ?? "",
@@ -69,6 +70,7 @@ export function ApplicationForm({ application, onClose, onSaved }: Props) {
         contractType: job.level === "INTERNSHIP" ? "INTERNSHIP" : f.contractType,
         sourcePlatform: job.source ? fromSource[job.source] : link.includes("linkedin.com") ? "LINKEDIN" : "COMPANY_SITE",
         jobUrl: job.url,
+        description: job.description ?? f.description,
       }));
     } catch (e) {
       setError(`Não deu para ler a página: ${(e as Error).message}. Preencha à mão.`);
@@ -135,6 +137,10 @@ export function ApplicationForm({ application, onClose, onSaved }: Props) {
           <label className="field"><span>Aplicou em</span><input className="input" type="date" value={form.appliedAt ?? ""} onChange={(e) => set("appliedAt", e.target.value)} /></label>
         </div>
         <label className="field"><span>Link</span><input className="input" type="url" value={form.jobUrl} onChange={(e) => set("jobUrl", e.target.value)} /></label>
+        <label className="field">
+          <span>Descrição da vaga</span>
+          <textarea className="textarea" rows={4} placeholder="Cole os requisitos da vaga: é com isso que o JobOps compara seus currículos" value={form.description ?? ""} onChange={(e) => set("description", e.target.value)} />
+        </label>
         <label className="field"><span>Anotações</span><textarea className="textarea" value={form.notes} onChange={(e) => set("notes", e.target.value)} /></label>
       </form>
     </Modal>

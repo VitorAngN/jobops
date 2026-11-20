@@ -92,3 +92,13 @@ table.table { width: 100%; border-collapse: collapse; }
 .login h1 { font-size: 20px; font-weight: 650; }
 .job-reasons .badge { white-space: normal; height: auto; min-height: 22px; padding-top: 2px; padding-bottom: 2px; }
 .job > div { min-width: 0; }
+
+/* Comparação com currículos */
+.match { display: grid; gap: 10px; }
+.match-item { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; display: grid; gap: 8px; }
+.match-item.best { border-color: var(--green-fg); }
+.match-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.match-pct { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+.match-bar { height: 6px; border-radius: 99px; background: var(--bg-hover); overflow: hidden; }
+.match-bar i { display: block; height: 100%; background: var(--green-fg); border-radius: inherit; }
+.match-tags { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; font-size: 13px; }

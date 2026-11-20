@@ -12,6 +12,7 @@ import { Found } from "./pages/Found";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
 import { Pipeline } from "./pages/Pipeline";
+import { Resumes } from "./pages/Resumes";
 import { SearchSettings } from "./pages/SearchSettings";
 
 type AuthState = "checking" | "login" | "open" | "authed";
@@ -66,6 +67,7 @@ function Shell({ onLogout }: { onLogout?: () => void }) {
         {route === "encontradas" && <Found onChanged={changed} onOpen={setOpenId} />}
         {route === "pipeline" && <Pipeline onOpen={setOpenId} version={version} onChanged={changed} />}
         {route === "candidaturas" && <Applications onOpen={setOpenId} onNew={() => setCreating(true)} version={version} />}
+        {route === "curriculos" && <Resumes />}
         {route === "busca" && <SearchSettings onChanged={changed} />}
       </main>
 

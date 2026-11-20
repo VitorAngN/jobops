@@ -125,3 +125,4 @@
 .tag button { border: 0; background: none; color: var(--text-3); cursor: pointer; padding: 0 3px; font-size: 15px; line-height: 1; }
 .tags input { flex: 1; min-width: 120px; border: 0; outline: none; background: none; padding: 0 6px; }
 .spin { animation: spin 1s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
+.sm-select { width: auto; height: 28px; font-size: 13px; padding: 0 8px; }
