@@ -1,0 +1,23 @@
+# Blueprint do Render (plano gratuito): API + site no mesmo serviço.
+# O banco fica no Neon (Postgres gratuito, não expira). Veja docs/08-deploy.md.
+services:
+  - type: web
+    name: jobops
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --include=dev && npm run api:prisma:generate && npm run build && npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
+    startCommand: node apps/api/dist/server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CRON_TOKEN
+        sync: false

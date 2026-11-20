@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 import cors from "cors";
 import express from "express";
 
@@ -33,5 +36,15 @@ app.use("/api/interactions", interactionsRoutes);
 app.use("/api/reminders", remindersRoutes);
 app.use("/api/metrics", metricsRoutes);
 app.use("/api/discovery", discoveryRoutes);
+
+app.use("/api", (_req, res) => {
+  res.status(404).json({ error: "NotFound", message: "Rota não encontrada." });
+});
+
+// Em produção a própria API entrega o site (apps/web/dist): um serviço só, sem CORS.
+const webDist = fileURLToPath(new URL("../../web/dist", import.meta.url));
+if (existsSync(webDist)) {
+  app.use(express.static(webDist, { index: "index.html", maxAge: "1h" }));
+}
 
 app.use(errorHandler);
