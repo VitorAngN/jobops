@@ -21,6 +21,14 @@ describe("importar por link", () => {
     });
   });
 
+  it("entende JSON-LD escapado como HTML (formato da Gupy)", () => {
+    const ld = JSON.stringify({ "@type": "JobPosting", title: "Estágio Dev", hiringOrganization: { name: "PUCPR" }, description: "<p>Java &amp; SQL</p>" })
+      .replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    expect(parseJobPage(`<script type="application/ld+json">${ld}</script>`, "https://x.gupy.io/job/1")).toMatchObject({
+      title: "Estágio Dev", company: "PUCPR", description: "Java & SQL",
+    });
+  });
+
   it("cai para as tags og quando não há JSON-LD", () => {
     const html = `<meta property="og:title" content="Junior Backend Developer"><meta property="og:site_name" content="Beta">`;
     expect(parseJobPage(html, "https://jobs.beta.com/1")).toMatchObject({ source: null, title: "Junior Backend Developer", company: "Beta", level: "JUNIOR" });

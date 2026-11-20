@@ -34,6 +34,27 @@ function findJobPosting(node: unknown): Record<string, any> | null {
   return findJobPosting(obj["@graph"]);
 }
 
+/** Alguns sites (a Gupy, por exemplo) escapam o JSON-LD como HTML (&quot;). */
+function parseJsonLd(raw: string): unknown {
+  for (const text of [raw, decodeEntities(raw)]) {
+    try {
+      return JSON.parse(text);
+    } catch {
+      /* tenta a próxima forma */
+    }
+  }
+  return null;
+}
+
+function decodeEntities(text: string) {
+  return text
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
 const meta = (html: string, name: string) =>
   html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${name}["'][^>]+content=["']([^"']*)["']`, "i"))?.[1] ??
   html.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]+(?:property|name)=["']${name}["']`, "i"))?.[1] ??
@@ -43,11 +64,7 @@ export function parseJobPage(html: string, url: string): ImportedJob {
   const host = new URL(url).hostname;
   let posting: Record<string, any> | null = null;
   for (const m of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
-    try {
-      posting = findJobPosting(JSON.parse(m[1]));
-    } catch {
-      /* JSON-LD inválido: ignora e tenta o próximo */
-    }
+    posting = findJobPosting(parseJsonLd(m[1]));
     if (posting) break;
   }
 
