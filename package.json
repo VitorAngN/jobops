@@ -20,5 +20,9 @@
     "typecheck": "npm run api:typecheck && npm run web:typecheck",
     "build": "npm run api:build && npm run web:build",
     "test": "npm run api:test"
+  },
+  "dependencies": {
+    "@neon/config": "^1.14.5",
+    "@neon/env": "^2.1.8"
   }
 }
