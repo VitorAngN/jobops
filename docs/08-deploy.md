@@ -10,14 +10,18 @@ Um serviço só no Render entrega a API e o site. O banco fica no Neon. Um workf
 
 ## 1. Banco (Neon)
 
-1. Crie um projeto em neon.tech (região mais próxima: São Paulo, se disponível, ou US East).
-2. Copie a *connection string* (com `?sslmode=require`).
+O projeto já está ligado ao Neon (`neon.ts` e a pasta `.neon`, que fica fora do Git).
+
+1. `neon env pull` grava em `.env.local` as duas conexões:
+   - `DATABASE_URL`: com pooler (endereço com `-pooler`), usada pela API.
+   - `DATABASE_URL_UNPOOLED`: direta, usada pelo Prisma Migrate.
+2. Esses dois valores vão para as variáveis do Render.
 
 ## 2. Servidor (Render)
 
 1. Em render.com: **New → Blueprint**, escolha o repositório `jobops`. O `render.yaml` já configura tudo.
 2. Preencha as variáveis pedidas:
-   - `DATABASE_URL`: a string do Neon.
+   - `DATABASE_URL` e `DATABASE_URL_UNPOOLED`: as duas do Neon.
    - `APP_PASSWORD`: a senha para entrar no app.
    - `CRON_TOKEN`: um texto longo aleatório (ex.: gere com `openssl rand -hex 32`).
    - `SESSION_SECRET` é gerado sozinho.
@@ -36,7 +40,8 @@ Para testar na hora: **Actions → Busca diária de vagas → Run workflow**.
 
 | Variável | Para quê |
 | --- | --- |
-| `DATABASE_URL` | conexão com o Postgres |
+| `DATABASE_URL` | conexão com o Postgres (no Neon, a com pooler) |
+| `DATABASE_URL_UNPOOLED` | conexão direta, para as migrations (no Postgres local, igual à de cima) |
 | `APP_PASSWORD` | senha única do app; vazia = sem login (só para uso local) |
 | `SESSION_SECRET` | assina a sessão (30 dias) |
 | `CRON_TOKEN` | protege `POST /api/cron/discovery` |

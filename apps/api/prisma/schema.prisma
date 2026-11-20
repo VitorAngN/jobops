@@ -4,7 +4,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Neon: DATABASE_URL é a conexão com pooler (uso normal da API);
+  // DATABASE_URL_UNPOOLED é a conexão direta, usada pelo Prisma Migrate.
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 enum ApplicationArea {
