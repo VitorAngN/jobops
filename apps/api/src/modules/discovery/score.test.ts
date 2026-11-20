@@ -51,6 +51,12 @@ describe("scoreJob", () => {
     expect(r.reasons.join(" ")).not.toContain("Palavras-chave");
   });
 
+  it("entende variações como estagiária", () => {
+    const r = scoreJob(job({ title: "Pessoa Estagiária de Desenvolvimento" }), profile, now);
+    expect(r.reasons.join(" ")).toContain('"estágio desenvolvimento"');
+    expect(r.reasons[0]).toBe("Nível: estágio (+30)");
+  });
+
   it("nunca passa de 0 a 100", () => {
     const r = scoreJob(job({ level: "SENIOR", title: "Staff Engineer", workMode: "ONSITE", location: "Recife" }), profile, now);
     expect(r.score).toBe(0);

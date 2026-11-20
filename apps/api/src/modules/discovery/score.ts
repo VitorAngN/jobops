@@ -22,6 +22,18 @@ const LEVEL_POINTS: Record<ApplicationLevel, number> = {
   SENIOR: -60,
 };
 
+const LEVEL_NAMES: Record<ApplicationLevel, string> = {
+  INTERNSHIP: "estágio",
+  TRAINEE: "trainee",
+  JUNIOR: "júnior",
+  MID: "pleno",
+  SENIOR: "sênior",
+  UNKNOWN: "não informado",
+};
+
+/** Junta variações da mesma palavra (estagiária, estagiário, estágio → estagio). */
+const stem = (text: string) => fold(text).replace(/\bestagi\w*/g, "estagio").replace(/\bdesenvolvedor\w*/g, "desenvolvedor");
+
 const has = (haystack: string, word: string) => {
   const w = fold(word).trim();
   return w.length > 0 && new RegExp(`(^|[^a-z0-9])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z0-9]|$)`).test(haystack);
@@ -29,7 +41,7 @@ const has = (haystack: string, word: string) => {
 
 /** Nota de 0 a 100 e os motivos (aparecem na triagem). */
 export function scoreJob(job: ExternalJob, profile: ScoreProfile, now = new Date()): ScoreResult {
-  const title = fold(job.title);
+  const title = stem(job.title);
   const body = `${title} ${fold(job.description ?? "")}`;
   const reasons: string[] = [];
 
@@ -40,9 +52,9 @@ export function scoreJob(job: ExternalJob, profile: ScoreProfile, now = new Date
 
   const level = LEVEL_POINTS[job.level];
   score += level;
-  if (job.level !== "UNKNOWN") reasons.push(`Nível: ${job.level.toLowerCase()} (${level > 0 ? "+" : ""}${level})`);
+  if (job.level !== "UNKNOWN") reasons.push(`Nível: ${LEVEL_NAMES[job.level]} (${level > 0 ? "+" : ""}${level})`);
 
-  const termHit = profile.terms.find((t) => fold(t).split(/\s+/).every((p) => has(title, p)));
+  const termHit = profile.terms.find((t) => stem(t).split(/\s+/).every((p) => has(title, p)));
   if (termHit) {
     score += 25;
     reasons.push(`Título bate com "${termHit}" (+25)`);
