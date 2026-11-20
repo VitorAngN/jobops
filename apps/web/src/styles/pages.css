@@ -36,12 +36,13 @@
 .run-info { display: flex; align-items: center; gap: 8px; color: var(--text-3); font-size: 13px; }
 
 /* Pipeline */
-.board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
+.board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
 .column { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; min-height: 200px; transition: background .1s; }
 .column.over { background: var(--accent-soft); border-color: var(--accent); }
 .column-head { display: flex; align-items: center; gap: 8px; padding: 4px 6px 10px; font-weight: 600; }
 .column-head .n { color: var(--text-3); font-weight: 500; }
-.column-body { display: grid; gap: 8px; }
+.column { min-width: 0; }
+.column-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .ticket { background: var(--panel); border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px; box-shadow: var(--shadow); cursor: grab; }
 .ticket:hover { border-color: var(--border-strong); }
 .ticket.dragging { opacity: .45; }
