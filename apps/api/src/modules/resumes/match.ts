@@ -38,6 +38,8 @@ type ResumeLike = { id: string; name: string; content: string | null };
 
 /** Ordena os currículos do mais para o menos aderente à vaga. */
 export function rankResumes<T extends ResumeLike>(jobText: string, resumes: T[]) {
+  // Vaga sem nenhuma competência reconhecida: não há o que comparar.
+  if (extractSkills(jobText).length === 0) return [];
   return resumes
     .filter((r) => r.content?.trim())
     .map((r) => ({ id: r.id, name: r.name, ...matchResume(jobText, r.content!) }))

@@ -31,4 +31,8 @@ describe("comparador de currículo", () => {
     expect(ranking.map((r) => r.name)).toEqual(["DevOps", "Back-end"]);
     expect(ranking[0].coverage).toBe(75);
   });
+
+  it("não compara vaga sem competências reconhecidas", () => {
+    expect(rankResumes("Estágio administrativo", [{ id: "1", name: "X", content: "Docker" }])).toEqual([]);
+  });
 });

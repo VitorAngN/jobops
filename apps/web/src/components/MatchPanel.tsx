@@ -6,7 +6,7 @@ export function MatchPanel({ text, chosenId }: { text: string; chosenId?: string
   const { data, error } = useLoad(() => matchResumes(text), [text]);
   if (error) return <div className="alert">{error}</div>;
   if (!data) return <span className="muted">Comparando…</span>;
-  if (data.length === 0) return <span className="muted">Cadastre um currículo com texto em Currículos para ver a comparação.</span>;
+  if (data.length === 0) return <span className="muted">Sem comparação: cadastre um currículo com texto em Currículos, ou a vaga não cita competências técnicas.</span>;
 
   return (
     <div className="match">
