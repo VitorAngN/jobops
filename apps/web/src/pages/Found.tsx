@@ -148,7 +148,9 @@ function JobRow({ job, onApprove, onDiscard, onRestore, onOpen }: RowProps) {
         </div>
         {job.bestResume && (
           <div className="match-tags" style={{ marginTop: 8 }}>
-            <span className="badge green">Currículo: {job.bestResume.name} · {job.bestResume.coverage}%</span>
+            {job.bestResume.coverage > 0
+              ? <span className={`badge ${job.bestResume.coverage >= 50 ? "green" : "amber"}`}>Currículo: {job.bestResume.name} · {job.bestResume.coverage}%</span>
+              : <span className="badge amber">Nenhum currículo cobre os requisitos</span>}
             {job.bestResume.missing.length > 0 && <span className="muted">falta: {job.bestResume.missing.slice(0, 5).join(", ")}</span>}
           </div>
         )}
