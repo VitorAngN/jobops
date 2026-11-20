@@ -6,5 +6,7 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     port: 5173,
+    // Em desenvolvimento a API fica no mesmo endereço do site (sem CORS).
+    proxy: { "/api": "http://localhost:3333" },
   },
 });

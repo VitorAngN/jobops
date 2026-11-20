@@ -23,7 +23,7 @@ export default function App() {
     onUnauthorized.handler = () => setAuth("login");
     getAuthStatus()
       .then(({ authRequired }) => setAuth(!authRequired ? "open" : session.get() ? "authed" : "login"))
-      .catch(() => setAuth(session.get() ? "authed" : "open"));
+      .catch(() => setAuth(session.get() ? "authed" : "login"));
   }, []);
 
   if (auth === "checking") return null;

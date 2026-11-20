@@ -24,7 +24,7 @@ import type {
   SearchProfilePayload,
 } from "./types";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3333/api";
+const API_URL = import.meta.env.VITE_API_URL ?? "/api";
 const TOKEN_KEY = "jobops.sessao";
 
 export const session = {
