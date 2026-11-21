@@ -1,11 +1,13 @@
 import { ArrowRight, BellRing, Inbox } from "lucide-react";
 
 import { CompanyAvatar, Empty, PageHead, Score, Skeletons } from "../components/ui";
-import { getMetricsByStatus, getMetricsSummary, listDiscovered, listReminders, updateReminder } from "../lib/api";
-import { dueLabel } from "../lib/format";
+import { getMetricsByStatus, getMetricsSummary, listApplications, listDiscovered, listReminders, updateApplication, updateReminder } from "../lib/api";
+import { dueLabel, relativeDate } from "../lib/format";
 import { levelLabels, pipelineColumns } from "../lib/labels";
 import type { Route } from "../lib/router";
 import { useLoad } from "../lib/useLoad";
+
+const STALE_DAYS = 21;
 
 type Props = { onNavigate: (r: Route) => void; onOpen: (id: string) => void; version: number };
 
@@ -15,6 +17,11 @@ export function Home({ onNavigate, onOpen, version }: Props) {
     [version],
   );
   const reminders = useLoad(listReminders, [version]);
+  const waiting = useLoad(async () => {
+    const r = await listApplications({ pageSize: 100, sortBy: "updatedAt", sortOrder: "asc" });
+    const limit = Date.now() - STALE_DAYS * 86_400_000;
+    return r.data.filter((a) => ["APPLIED", "IN_REVIEW", "WAITING_RESPONSE"].includes(a.status) && new Date(a.updatedAt).getTime() < limit);
+  }, [version]);
 
   if (error) return <div className="page"><div className="alert">{error}</div></div>;
   if (!data) return <div className="page"><Skeletons n={4} /></div>;
@@ -82,6 +89,21 @@ export function Home({ onNavigate, onOpen, version }: Props) {
               })
             )}
           </section>
+
+          {waiting.data && waiting.data.length > 0 && (
+            <section className="card">
+              <div className="card-head"><h2>Sem resposta há 3 semanas</h2></div>
+              {waiting.data.slice(0, 5).map((a) => (
+                <div className="list-row" key={a.id}>
+                  <div className="row-main" style={{ cursor: "pointer" }} onClick={() => onOpen(a.id)}>
+                    <div className="row-title">{a.title}</div>
+                    <div className="row-sub">{a.company.name} · última mudança {relativeDate(a.updatedAt)}</div>
+                  </div>
+                  <button className="btn sm" onClick={async () => { await updateApplication(a.id, { status: "GHOSTED" }); await waiting.reload(); }}>Sem retorno</button>
+                </div>
+              ))}
+            </section>
+          )}
 
           <section className="card">
             <div className="card-head">

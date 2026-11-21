@@ -28,3 +28,23 @@ export function withLifecycleDefaults<T extends ApplicationCreateInput | Applica
     ...patch,
   };
 }
+
+export const FOLLOW_UP_DAYS = 7;
+
+/**
+ * Ao aplicar pela primeira vez (saindo de "Salva"), agenda um follow-up em 7 dias,
+ * a não ser que já tenha vindo uma data.
+ */
+export function withFollowUp<T extends ApplicationCreateInput | ApplicationUpdateInput>(
+  input: T,
+  previousStatus: string | null,
+  now = new Date(),
+): T {
+  const firstApply = input.status === "APPLIED" && (previousStatus === null || previousStatus === "SAVED");
+  if (!firstApply || input.followUpAt) return input;
+  return {
+    ...input,
+    followUpAt: new Date(now.getTime() + FOLLOW_UP_DAYS * 86_400_000),
+    nextAction: input.nextAction ?? "Mandar follow-up para o recrutador",
+  };
+}

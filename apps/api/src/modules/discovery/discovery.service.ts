@@ -12,6 +12,8 @@ const SOURCE_TO_PLATFORM: Record<DiscoverySource, SourcePlatform> = {
   REMOTIVE: "OTHER",
 };
 
+const STALE_DAYS = 30;
+
 const ATS: DiscoverySource[] = ["GREENHOUSE", "LEVER", "ASHBY"];
 
 export type RunSummary = { runId: string; found: number; created: number; errors: string[] };
@@ -30,6 +32,8 @@ export async function runDiscovery(
   const errors: string[] = [];
   let found = 0;
   let created = 0;
+  // Mesma fonte + mesmos termos em buscas diferentes = uma chamada só (a Remotive limita chamadas por dia).
+  const cache = new Map<string, Promise<ExternalJob[]>>();
 
   for (const profile of profiles) {
     for (const sourceId of profile.sources) {
@@ -38,7 +42,10 @@ export async function runDiscovery(
 
       let jobs: ExternalJob[];
       try {
-        jobs = await SOURCES[sourceId].search({ terms: profile.terms, companies }, options.fetcher);
+        const input = { terms: sourceId === "REMOTIVE" ? [] : profile.terms, companies: companies.map(({ slug, name }) => ({ slug, name })) };
+        const key = `${sourceId}:${JSON.stringify(input)}`;
+        if (!cache.has(key)) cache.set(key, SOURCES[sourceId].search(input, options.fetcher));
+        jobs = await cache.get(key)!;
       } catch (error) {
         errors.push(`${profile.name} · ${sourceId}: ${(error as Error).message}`);
         continue;
@@ -56,6 +63,12 @@ export async function runDiscovery(
       }
     }
   }
+
+  // Vagas novas paradas há mais de 30 dias provavelmente já fecharam: saem da caixa de entrada.
+  await db.discoveredJob.updateMany({
+    where: { status: "NEW", createdAt: { lt: new Date(Date.now() - STALE_DAYS * 86_400_000) } },
+    data: { status: "DISCARDED" },
+  });
 
   await db.discoveryRun.update({
     where: { id: run.id },

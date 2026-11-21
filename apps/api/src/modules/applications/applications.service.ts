@@ -1,5 +1,5 @@
 import { NotFoundError } from "../../shared/http-errors.js";
-import { withLifecycleDefaults } from "./application-lifecycle.js";
+import { withFollowUp, withLifecycleDefaults } from "./application-lifecycle.js";
 import { applicationsRepository } from "./applications.repository.js";
 import type {
   ApplicationCreateInput,
@@ -26,11 +26,12 @@ export const applicationsService = {
   },
 
   createApplication(input: ApplicationCreateInput) {
-    return applicationsRepository.create(withLifecycleDefaults(input));
+    return applicationsRepository.create(withFollowUp(withLifecycleDefaults(input), null));
   },
 
-  updateApplication(id: string, input: ApplicationUpdateInput) {
-    return applicationsRepository.update(id, withLifecycleDefaults(input));
+  async updateApplication(id: string, input: ApplicationUpdateInput) {
+    const current = input.status ? await applicationsRepository.findById(id) : null;
+    return applicationsRepository.update(id, withFollowUp(withLifecycleDefaults(input), current?.status ?? "OTHER"));
   },
 
   deleteApplication(id: string) {

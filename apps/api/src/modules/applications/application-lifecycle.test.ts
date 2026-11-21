@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { withLifecycleDefaults } from "./application-lifecycle.js";
+import { withFollowUp, withLifecycleDefaults } from "./application-lifecycle.js";
 
 describe("application lifecycle", () => {
   it("sets appliedAt when status changes to applied", () => {
@@ -29,5 +29,24 @@ describe("application lifecycle", () => {
       status: "APPLIED",
       appliedAt,
     });
+  });
+});
+
+describe("follow-up automático", () => {
+  const now = new Date("2026-11-21T12:00:00Z");
+
+  it("agenda 7 dias depois ao sair de Salva para Aplicada", () => {
+    const r = withFollowUp({ status: "APPLIED" }, "SAVED", now);
+    expect(r.followUpAt).toEqual(new Date("2026-11-28T12:00:00Z"));
+    expect(r.nextAction).toContain("follow-up");
+  });
+
+  it("não agenda de novo quando já estava em outro status", () => {
+    expect(withFollowUp({ status: "APPLIED" }, "IN_REVIEW", now).followUpAt).toBeUndefined();
+  });
+
+  it("respeita a data escolhida", () => {
+    const d = new Date("2026-12-01T00:00:00Z");
+    expect(withFollowUp({ status: "APPLIED", followUpAt: d }, "SAVED", now).followUpAt).toBe(d);
   });
 });
