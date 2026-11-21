@@ -102,3 +102,4 @@ table.table { width: 100%; border-collapse: collapse; }
 .match-bar { height: 6px; border-radius: 99px; background: var(--bg-hover); overflow: hidden; }
 .match-bar i { display: block; height: 100%; background: var(--green-fg); border-radius: inherit; }
 .match-tags { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; font-size: 13px; }
+.source-help { margin: 4px 0 0; padding-left: 18px; color: var(--text-3); font-size: 12.5px; display: grid; gap: 2px; }

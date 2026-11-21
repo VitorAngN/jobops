@@ -6,7 +6,7 @@ import { useToast } from "../components/Toast";
 import { Empty, PageHead, Skeletons } from "../components/ui";
 import { deleteProfile, listProfiles, listRuns, runDiscovery, saveProfile } from "../lib/api";
 import { relativeDate } from "../lib/format";
-import { areaLabels, discoverySourceLabels } from "../lib/labels";
+import { areaLabels, discoverySourceHelp, discoverySourceLabels } from "../lib/labels";
 import type { ApplicationArea, DiscoverySource, SearchProfile, SearchProfilePayload, WatchedCompany } from "../lib/types";
 import { useLoad } from "../lib/useLoad";
 
@@ -16,25 +16,25 @@ const junior = ["sênior", "senior", "pleno", "especialista", "coordenador", "ge
 /** Modelos prontos por área. Tudo editável depois. */
 const templates: SearchProfilePayload[] = [
   {
-    ...base, name: "Estágio DevOps / Cloud", area: "DEVOPS", sources: ["GUPY", "REMOTIVE"],
+    ...base, name: "Estágio DevOps / Cloud", area: "DEVOPS", sources: ["GUPY", "SOLIDES", "GITHUB", "HIMALAYAS", "REMOTIVE"],
     terms: ["estágio devops", "estágio cloud", "estágio infraestrutura", "estágio sre"],
     keywords: ["devops", "cloud", "docker", "kubernetes", "ci/cd", "linux", "aws", "azure", "terraform", "git", "pipeline"],
     excludeWords: junior,
   },
   {
-    ...base, name: "Estágio back-end", area: "BACKEND", sources: ["GUPY", "REMOTIVE"],
+    ...base, name: "Estágio back-end", area: "BACKEND", sources: ["GUPY", "SOLIDES", "GITHUB", "HIMALAYAS", "REMOTIVE"],
     terms: ["estágio back-end", "estágio desenvolvimento", "estágio software", "estágio programação"],
     keywords: ["back-end", "backend", "api", "node", "typescript", "java", "c#", ".net", "python", "sql", "postgres", "docker"],
     excludeWords: junior,
   },
   {
-    ...base, name: "Estágio full-stack", area: "FULLSTACK", sources: ["GUPY", "REMOTIVE"],
+    ...base, name: "Estágio full-stack", area: "FULLSTACK", sources: ["GUPY", "SOLIDES", "GITHUB", "HIMALAYAS"],
     terms: ["estágio full stack", "estágio desenvolvedor web", "estágio fullstack"],
     keywords: ["full stack", "fullstack", "react", "node", "typescript", "javascript", "api", "sql"],
     excludeWords: junior,
   },
   {
-    ...base, name: "Estágio suporte / infra de TI", area: "SUPPORT", sources: ["GUPY"],
+    ...base, name: "Estágio suporte / infra de TI", area: "SUPPORT", sources: ["GUPY", "SOLIDES"],
     terms: ["estágio suporte ti", "estágio infraestrutura ti", "estágio redes", "estágio help desk"],
     keywords: ["suporte", "redes", "linux", "windows", "help desk", "hardware", "infraestrutura", "active directory"],
     excludeWords: junior,
@@ -114,7 +114,7 @@ function ProfileCard({ profile, onSaved, onDeleted, onRan }: CardProps) {
   const toast = useToast();
   const set = <K extends keyof SearchProfilePayload>(k: K, v: SearchProfilePayload[K]) => setForm((f) => ({ ...f, [k]: v }));
   const dirty = JSON.stringify(form) !== JSON.stringify(initial);
-  const needsCompanies = form.sources.some((s) => s === "GREENHOUSE" || s === "LEVER" || s === "ASHBY");
+  const needsCompanies = form.sources.some((s) => s === "GREENHOUSE" || s === "LEVER" || s === "ASHBY" || s === "SMARTRECRUITERS");
 
   const toggleSource = (s: DiscoverySource) =>
     set("sources", form.sources.includes(s) ? form.sources.filter((x) => x !== s) : [...form.sources, s]);
@@ -172,13 +172,15 @@ function ProfileCard({ profile, onSaved, onDeleted, onRan }: CardProps) {
           <span>Onde procurar</span>
           <div className="sources">
             {(Object.keys(discoverySourceLabels) as DiscoverySource[]).map((s) => (
-              <label key={s} className="source-chip">
+              <label key={s} className="source-chip" title={discoverySourceHelp[s]}>
                 <input type="checkbox" checked={form.sources.includes(s)} onChange={() => toggleSource(s)} />
                 {discoverySourceLabels[s]}
               </label>
             ))}
           </div>
-          <small>Gupy busca pelos termos. Remotive traz vagas remotas internacionais. Greenhouse, Lever e Ashby olham as empresas que você listar abaixo.</small>
+          <ul className="source-help">
+            {form.sources.map((s) => <li key={s}><b>{discoverySourceLabels[s]}:</b> {discoverySourceHelp[s]}</li>)}
+          </ul>
         </div>
 
         <label className="field">
@@ -216,13 +218,14 @@ function ProfileCard({ profile, onSaved, onDeleted, onRan }: CardProps) {
         {needsCompanies && (
           <div className="field">
             <span>Empresas acompanhadas</span>
-            <small>O código é o que aparece no link da página de vagas: boards.greenhouse.io/<b>nubank</b>, jobs.lever.co/<b>empresa</b>, jobs.ashbyhq.com/<b>empresa</b>.</small>
+            <small>O código é o que aparece no link da página de vagas: boards.greenhouse.io/<b>nubank</b>, jobs.lever.co/<b>empresa</b>, jobs.ashbyhq.com/<b>empresa</b>, jobs.smartrecruiters.com/<b>Empresa</b>.</small>
             {form.companies.map((c, i) => (
               <div className="company-row" key={i}>
                 <select className="select" value={c.source} onChange={(e) => setCompany(i, { source: e.target.value as WatchedCompany["source"] })}>
                   <option value="GREENHOUSE">Greenhouse</option>
                   <option value="LEVER">Lever</option>
                   <option value="ASHBY">Ashby</option>
+                  <option value="SMARTRECRUITERS">SmartRecruiters</option>
                 </select>
                 <input className="input" placeholder="código (ex.: nubank)" value={c.slug} onChange={(e) => setCompany(i, { slug: e.target.value.trim().toLowerCase() })} />
                 <input className="input" placeholder="Nome (ex.: Nubank)" value={c.name} onChange={(e) => setCompany(i, { name: e.target.value })} />

@@ -36,6 +36,10 @@ export type SourcePlatform =
   | "LEVER"
   | "ASHBY"
   | "REFERRAL"
+  | "SOLIDES"
+  | "HIMALAYAS"
+  | "GITHUB"
+  | "SMARTRECRUITERS"
   | "OTHER";
 
 export type Company = {
@@ -220,7 +224,7 @@ export type ResumeMatch = { id: string; name: string; coverage: number; matched:
 
 // ---------- Busca automática ----------
 
-export type DiscoverySource = "GUPY" | "GREENHOUSE" | "LEVER" | "ASHBY" | "REMOTIVE";
+export type DiscoverySource = "GUPY" | "SOLIDES" | "GITHUB" | "HIMALAYAS" | "REMOTIVE" | "GREENHOUSE" | "LEVER" | "ASHBY" | "SMARTRECRUITERS";
 export type DiscoveredStatus = "NEW" | "APPROVED" | "DISCARDED";
 
 export type DiscoveredJob = {
@@ -242,7 +246,7 @@ export type DiscoveredJob = {
   bestResume: ResumeMatch | null;
 };
 
-export type WatchedCompany = { source: "GREENHOUSE" | "LEVER" | "ASHBY"; slug: string; name: string };
+export type WatchedCompany = { source: "GREENHOUSE" | "LEVER" | "ASHBY" | "SMARTRECRUITERS"; slug: string; name: string };
 
 export type SearchProfile = {
   id: string;

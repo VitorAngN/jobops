@@ -21,7 +21,10 @@ const blank: CreateApplicationPayload = {
   notes: "",
 };
 
-const fromSource: Record<DiscoverySource, SourcePlatform> = { GUPY: "GUPY", GREENHOUSE: "GREENHOUSE", LEVER: "LEVER", ASHBY: "ASHBY", REMOTIVE: "OTHER" };
+const fromSource: Record<DiscoverySource, SourcePlatform> = {
+  GUPY: "GUPY", GREENHOUSE: "GREENHOUSE", LEVER: "LEVER", ASHBY: "ASHBY", REMOTIVE: "OTHER",
+  SOLIDES: "SOLIDES", HIMALAYAS: "HIMALAYAS", GITHUB: "GITHUB", SMARTRECRUITERS: "SMARTRECRUITERS",
+};
 
 function options<T extends string>(labels: Record<T, string>) {
   return (Object.keys(labels) as T[]).map((k) => <option key={k} value={k}>{labels[k]}</option>);

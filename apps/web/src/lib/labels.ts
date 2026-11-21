@@ -72,15 +72,36 @@ export const platformLabels: Record<SourcePlatform, string> = {
   LEVER: "Lever",
   ASHBY: "Ashby",
   REFERRAL: "Indicação",
+  SOLIDES: "Sólides",
+  HIMALAYAS: "Himalayas",
+  GITHUB: "Comunidades (GitHub)",
+  SMARTRECRUITERS: "SmartRecruiters",
   OTHER: "Outro",
 };
 
 export const discoverySourceLabels: Record<DiscoverySource, string> = {
   GUPY: "Gupy",
+  SOLIDES: "Sólides",
+  GITHUB: "Comunidades (GitHub)",
+  HIMALAYAS: "Himalayas",
+  REMOTIVE: "Remotive",
   GREENHOUSE: "Greenhouse",
   LEVER: "Lever",
   ASHBY: "Ashby",
-  REMOTIVE: "Remotive",
+  SMARTRECRUITERS: "SmartRecruiters",
+};
+
+/** O que cada fonte cobre (aparece na tela de busca). */
+export const discoverySourceHelp: Record<DiscoverySource, string> = {
+  GUPY: "Maior portal de vagas do Brasil; busca pelos termos.",
+  SOLIDES: "Portal Sólides Vagas, muito usado por empresas médias; busca pelos termos na área de tecnologia.",
+  GITHUB: "Vagas postadas nas comunidades backend-br, frontendbr, DevOps-Brasil, SouJava e outras.",
+  HIMALAYAS: "Vagas remotas abertas a quem mora no Brasil.",
+  REMOTIVE: "Vagas remotas internacionais de software.",
+  GREENHOUSE: "Empresas que você listar abaixo.",
+  LEVER: "Empresas que você listar abaixo.",
+  ASHBY: "Empresas que você listar abaixo.",
+  SMARTRECRUITERS: "Empresas que você listar abaixo.",
 };
 
 export const interactionLabels: Record<InteractionType, string> = {

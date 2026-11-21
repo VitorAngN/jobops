@@ -7,7 +7,7 @@ import { approveJob, runDiscovery } from "./discovery.service.js";
 import { importFromUrl } from "./import-url.js";
 import { rankResumes } from "../resumes/match.js";
 
-const SOURCES = ["GUPY", "GREENHOUSE", "LEVER", "ASHBY", "REMOTIVE"] as const;
+const SOURCES = ["GUPY", "GREENHOUSE", "LEVER", "ASHBY", "REMOTIVE", "SOLIDES", "HIMALAYAS", "GITHUB", "SMARTRECRUITERS"] as const;
 const words = z.array(z.string().trim().min(1)).default([]);
 
 const profileSchema = z.object({
@@ -22,7 +22,7 @@ const profileSchema = z.object({
   sources: z.array(z.enum(SOURCES)).default(["GUPY"]),
   minScore: z.number().int().min(0).max(100).default(40),
   companies: z
-    .array(z.object({ source: z.enum(["GREENHOUSE", "LEVER", "ASHBY"]), slug: z.string().trim().min(1), name: z.string().trim().min(1) }))
+    .array(z.object({ source: z.enum(["GREENHOUSE", "LEVER", "ASHBY", "SMARTRECRUITERS"]), slug: z.string().trim().min(1), name: z.string().trim().min(1) }))
     .default([]),
 });
 

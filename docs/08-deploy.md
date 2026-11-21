@@ -45,4 +45,5 @@ Para testar na hora: **Actions → Busca diária de vagas → Run workflow**.
 | `APP_PASSWORD` | senha única do app; vazia = sem login (só para uso local) |
 | `SESSION_SECRET` | assina a sessão (30 dias) |
 | `CRON_TOKEN` | protege `POST /api/cron/discovery` |
+| `GITHUB_TOKEN` | opcional: token do GitHub (só leitura) para a fonte "Comunidades"; sem ele o limite é 60 consultas por hora |
 | `WEB_ORIGIN` | só se o site ficar em outro domínio (CORS) |

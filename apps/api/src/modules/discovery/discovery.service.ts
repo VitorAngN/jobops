@@ -10,11 +10,17 @@ const SOURCE_TO_PLATFORM: Record<DiscoverySource, SourcePlatform> = {
   LEVER: "LEVER",
   ASHBY: "ASHBY",
   REMOTIVE: "OTHER",
+  SOLIDES: "SOLIDES",
+  HIMALAYAS: "HIMALAYAS",
+  GITHUB: "GITHUB",
+  SMARTRECRUITERS: "SMARTRECRUITERS",
 };
 
 const STALE_DAYS = 30;
 
-const ATS: DiscoverySource[] = ["GREENHOUSE", "LEVER", "ASHBY"];
+const ATS: DiscoverySource[] = ["GREENHOUSE", "LEVER", "ASHBY", "SMARTRECRUITERS"];
+/** Fontes que não dependem dos termos (trazem tudo e a pontuação filtra): uma chamada por execução. */
+const TERMLESS: DiscoverySource[] = ["REMOTIVE", "GITHUB"];
 
 export type RunSummary = { runId: string; found: number; created: number; errors: string[] };
 
@@ -42,7 +48,7 @@ export async function runDiscovery(
 
       let jobs: ExternalJob[];
       try {
-        const input = { terms: sourceId === "REMOTIVE" ? [] : profile.terms, companies: companies.map(({ slug, name }) => ({ slug, name })) };
+        const input = { terms: TERMLESS.includes(sourceId) ? [] : profile.terms, companies: companies.map(({ slug, name }) => ({ slug, name })) };
         const key = `${sourceId}:${JSON.stringify(input)}`;
         if (!cache.has(key)) cache.set(key, SOURCES[sourceId].search(input, options.fetcher));
         jobs = await cache.get(key)!;

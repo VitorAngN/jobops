@@ -57,6 +57,10 @@ enum SourcePlatform {
   LEVER
   ASHBY
   REFERRAL
+  SOLIDES
+  HIMALAYAS
+  GITHUB
+  SMARTRECRUITERS
   OTHER
 }
 
@@ -96,6 +100,10 @@ enum DiscoverySource {
   LEVER
   ASHBY
   REMOTIVE
+  SOLIDES
+  HIMALAYAS
+  GITHUB
+  SMARTRECRUITERS
 }
 
 enum DiscoveredStatus {

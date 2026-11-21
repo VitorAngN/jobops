@@ -93,3 +93,42 @@ export const ashby: JobSource = {
     return jobs;
   },
 };
+
+type SmartRecruitersJob = {
+  id: string;
+  name: string;
+  releasedDate?: string;
+  location?: { city?: string; region?: string; country?: string; remote?: boolean; hybrid?: boolean };
+  experienceLevel?: { label?: string };
+  typeOfEmployment?: { label?: string };
+  department?: { label?: string };
+  function?: { label?: string };
+};
+
+/** SmartRecruiters: API pública de vagas por empresa (a lista não traz a descrição completa). */
+export const smartrecruiters: JobSource = {
+  id: "SMARTRECRUITERS",
+  async search({ companies }, fetcher = fetch) {
+    const jobs: ExternalJob[] = [];
+    for (const company of companies) {
+      const data = await getJson(fetcher, `https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(company.slug)}/postings?limit=100`);
+      for (const j of (data.content ?? []) as SmartRecruitersJob[]) {
+        const loc = j.location ?? {};
+        const level = `${j.experienceLevel?.label ?? ""} ${j.typeOfEmployment?.label ?? ""}`;
+        jobs.push({
+          source: "SMARTRECRUITERS",
+          externalId: `${company.slug}:${j.id}`,
+          title: j.name,
+          company: company.name,
+          location: [loc.city, loc.region, loc.country?.toUpperCase()].filter(Boolean).join(", ") || null,
+          workMode: loc.remote ? "REMOTE" : loc.hybrid ? "HYBRID" : "ONSITE",
+          level: /intern/i.test(level) ? "INTERNSHIP" : guessLevel(`${j.name} ${level}`),
+          url: `https://jobs.smartrecruiters.com/${encodeURIComponent(company.slug)}/${j.id}`,
+          description: plainText([j.department?.label, j.function?.label, j.experienceLevel?.label].filter(Boolean).join(" · ")),
+          publishedAt: parseDate(j.releasedDate),
+        });
+      }
+    }
+    return jobs;
+  },
+};

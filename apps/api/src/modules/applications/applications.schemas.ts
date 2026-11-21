@@ -14,6 +14,10 @@ export const sourcePlatformSchema = z.enum([
   "LEVER",
   "ASHBY",
   "REFERRAL",
+  "SOLIDES",
+  "HIMALAYAS",
+  "GITHUB",
+  "SMARTRECRUITERS",
   "OTHER",
 ]);
 export const statusSchema = z.enum([

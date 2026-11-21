@@ -16,6 +16,9 @@ function sourceFromHost(host: string): DiscoverySource | null {
   if (host.endsWith("lever.co")) return "LEVER";
   if (host.endsWith("ashbyhq.com")) return "ASHBY";
   if (host.endsWith("remotive.com")) return "REMOTIVE";
+  if (host.endsWith("solides.com.br")) return "SOLIDES";
+  if (host.endsWith("himalayas.app")) return "HIMALAYAS";
+  if (host.endsWith("smartrecruiters.com")) return "SMARTRECRUITERS";
   return null;
 }
 
