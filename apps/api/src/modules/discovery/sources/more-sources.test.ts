@@ -48,7 +48,8 @@ describe("GitHub (comunidades)", () => {
   it("acha a empresa no título", () => {
     expect(companyFromTitle("[Remoto] Desenvolvedor(a) Back-end na JotPsych", "backend-br/vagas")).toBe("JotPsych");
     expect(companyFromTitle("DevOps Pleno - Fundação SDTP - Remoto CLT", "DevOps-Brasil/vagas")).toBe("Fundação SDTP");
-    expect(companyFromTitle("DevOps Engineer (Sênior) / Proativa RH - São Paulo", "DevOps-Brasil/vagas")).toBe("Proativa RH");
+    expect(companyFromTitle("Dev Back-end Júnior - Python / AI Coding - MKdigital", "backend-br/vagas")).toBe("MKdigital");
+    expect(companyFromTitle("DevOps Engineer - Proativa RH - São Paulo", "DevOps-Brasil/vagas")).toBe("Proativa RH");
     expect(companyFromTitle("[SP] Vaga legal", "backend-br/vagas")).toBe("backend-br");
   });
 

@@ -28,14 +28,18 @@ type Issue = {
 /** "[Remoto] Dev Back-end na Empresa X" → "Empresa X"; sem padrão, usa o nome da comunidade. */
 const NOISE = /^(remoto|remote|h[ií]brido|presencial|clt|pj|est[aá]gio|j[uú]nior|pleno|s[eê]nior|brasil)(\s+(remoto|clt|pj|h[ií]brido))*$/i;
 /** "Curitiba/PR", "São Paulo, SP" */
+const CITIES = /^(s[aã]o paulo|rio de janeiro|belo horizonte|curitiba|porto alegre|florian[oó]polis|recife|bras[ií]lia|salvador|campinas|londrina|joinville|fortaleza|goi[aâ]nia|manaus)$/i;
 const CITY_UF = /^[\p{L} ]+[\/,]\s?(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)$/u;
 
 export function companyFromTitle(title: string, repo: string) {
   const clean = title.replace(/\[[^\]]*\]/g, "").trim();
   const na = clean.match(/\s(?:na|no|@|at)\s+([^|()\-–]+)$/i)?.[1]?.trim();
   if (na && na.length <= 60) return na;
-  const parts = clean.split(/\s[-–|\/]\s/).map((p) => p.trim());
-  const candidate = parts.slice(1).find((p) => p && !NOISE.test(p) && !CITY_UF.test(p));
+  const parts = clean.split(/\s[-–|]\s/).map((p) => p.trim());
+  const candidate = parts
+    .slice(1)
+    .filter((p) => p && !NOISE.test(p) && !CITY_UF.test(p) && !CITIES.test(p))
+    .pop();
   return candidate && candidate.length <= 60 ? candidate : repo.split("/")[0];
 }
 
